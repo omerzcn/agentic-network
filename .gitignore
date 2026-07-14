@@ -1,0 +1,5 @@
+.venv/
+.venv
+.env
+Lecture_Code/
+__pycache__

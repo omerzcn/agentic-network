@@ -1,0 +1,12 @@
+langgraph
+networkx
+matplotlib
+numpy
+pandas
+tqdm
+requests
+dotenv
+psutil
+ollama
+streamlit
+plotly
