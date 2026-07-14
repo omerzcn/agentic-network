@@ -1,8 +1,8 @@
+from policy_engine import DeterministicPolicyEngine
+
 class RoutingAgent:
     def __init__(self, ctrl):
-        self.ctrl = ctrl
+        self.policy = DeterministicPolicyEngine(ctrl)
 
     def route_flows(self, demands):
-        raise NotImplementedError(
-            "Agentic routing is not implemented in Stage 1."
-        )
+        return self.policy.route_flows(demands)

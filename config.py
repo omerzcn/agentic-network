@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 
 num_steps = 100
-algorithms = ["heuristic_no_delay", "heuristic_low_delay", "heuristic_high_delay"]
-# , "agentic"]
+algorithms = ["heuristic_no_delay", "heuristic_low_delay", "heuristic_high_delay", "agentic"]
+
 colors = {
     "heuristic_no_delay": "blue",
     "heuristic_low_delay": "orange",
