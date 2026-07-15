@@ -46,6 +46,12 @@ if __name__ == "__main__":
     with Simulator(g, traffic, ctrl, llm_agent, verbosity=verbosity_level) as simulator:
         for algo in algorithms:
 
+            # Reseed so that every algorithm sees the same sequence of link failures and noise,
+            # not whatever is left over from the previous algorithm's run.
+            if random_seed is not None:
+                random.seed(random_seed)
+                np.random.seed(random_seed)
+
             simulator.reset_agentic_state()
             ctrl.reset()
             g.reset_link_states()
