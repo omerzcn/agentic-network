@@ -86,10 +86,29 @@ class RoutingAgent(BaseCandidatePolicy):
                 "demands": demands,
             }
         )
-        return {
+
+        paths = {
             **result.get("reused_paths", {}),
             **result.get("validated_paths", {}),
         }
+
+        # Final safety net just to be sure: re-check every path against the live network
+        # right before handing it to the simulator.
+        safe_paths = {}
+
+        for flow, path in paths.items():
+            src, dst = flow
+            demand = demands[flow]
+
+            if not self.ctrl.validate_path_logic(src, dst, path):
+                continue
+
+            if not self.ctrl.validate_path_sla(path, demand):
+                continue
+
+            safe_paths[flow] = path
+
+        return safe_paths
 
     def _perceive(self, state: RoutingState) -> dict:
         topology = self.ctrl.get_topology_snapshot()
