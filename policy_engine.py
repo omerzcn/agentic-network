@@ -4,14 +4,19 @@ import networkx as nx
 
 from simulation import ControllerAPI, TopologySnapshot
 
+from candidate_generator import CandidateGenerator
+
 Node = str
 FlowKey = Tuple[Node, Node]
 
 class DeterministicPolicyEngine:
     """Simple routing policy to return one path for each active traffic demand."""
 
-    def __init__(self, ctrl: ControllerAPI):
+    def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 3):
         self.ctrl = ctrl
+        self.candidate_generator = CandidateGenerator(
+            candidates_per_flow=candidates_per_flow
+        )
 
     def route_flows(
         self,
@@ -26,10 +31,17 @@ class DeterministicPolicyEngine:
             if demand_mbps <= 0:
                 continue
 
-            path = self._shortest_path(graph, src, dst)
+            candidates = self.candidate_generator.generate(
+                graph,
+                src,
+                dst,
+            )
 
-            if path:
-                paths[(src, dst)] = path
+            #Debugging
+            #print(f"[CandidateGenerator] " + src + "->" + dst + ": " + str(candidates))
+
+            if candidates:
+                paths[(src, dst)] = candidates[0]
 
         return paths
 
