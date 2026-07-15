@@ -10,7 +10,10 @@ from tqdm import tqdm
 from agents import RoutingAgent
 from config import *
 from helpers import create_random_network, create_random_traffic_pattern
+
 from simulation import NetworkGraph, TrafficModel, ControllerAPI, Simulator
+
+from metrics_logger import compute_sla_metrics
 
 if __name__ == "__main__":
 
@@ -63,6 +66,7 @@ if __name__ == "__main__":
             )
             drop_reason_counts = Counter()
             drop_reason_mbps = Counter()
+            sla_totals = Counter()
             for t in tqdm(range(num_steps)):
                 _, metrics = simulator.step(algo)
                 for k in metric_names:
@@ -73,11 +77,20 @@ if __name__ == "__main__":
                     drop_reason_counts[item["reason"]] += 1
                     drop_reason_mbps[item["reason"]] += item["demand"]
 
+                sla = compute_sla_metrics(ctrl, metrics, DELAY_BUDGET_MS)
+                sla_totals["bandwidth_violation_steps"] += sla["bandwidth_violation"]
+                sla_totals["bandwidth_violating_flows"] += sla["bandwidth_violating_flows"]
+                sla_totals["bandwidth_dropped_mbps"] += sla["bandwidth_dropped_mbps"]
+                sla_totals["delay_violation_steps"] += sla["delay_violation"]
+                sla_totals["delay_violating_flows"] += sla["delay_violating_flows"]
+                sla_totals["total_delay_excess_ms"] += sla["total_delay_excess_ms"]
+
             all_history[algo] = history
             all_history_per_demand[algo] = history_per_demand
 
             print(f"[{algo}] drop reasons (count): {dict(drop_reason_counts)}")
             print(f"[{algo}] drop reasons (Mbps): {dict(drop_reason_mbps)}")
+            print(f"[{algo}] SLA violations (of {num_steps} steps): {dict(sla_totals)}")
 
     # Plot metrics
     fig, axes = plt.subplots(1, len(metric_names), figsize=(12, 4), sharex=True)
