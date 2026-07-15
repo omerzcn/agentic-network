@@ -135,6 +135,8 @@ class RoutingAgent(BaseCandidatePolicy):
     def _validate(self, state: RoutingState) -> dict:
         validated = {}
         invalid_flows = []
+        logic_fail = 0
+        capacity_fail = 0
 
         for flow, path in state["selected_paths"].items():
             src, dst = flow
@@ -144,13 +146,21 @@ class RoutingAgent(BaseCandidatePolicy):
 
             capacity_ok = path_is_feasible(state["graph"], path, demand)
 
+            if not logic_ok:
+                logic_fail += 1
+            if not capacity_ok:
+                capacity_fail += 1
+
             if logic_ok and capacity_ok:
                 validated[flow] = path
             else:
                 invalid_flows.append(flow)
 
-        # Debugging: how many of the LLM's picks passed validation?
-        print(f"[RoutingAgent] validate: {len(validated)} ok, {len(invalid_flows)} invalid")
+        # Debugging: dividing invalid reasons for stale and live link mismatches against capacity shortfall 
+        print(
+            f"[RoutingAgent] validate: {len(validated)} ok, {len(invalid_flows)} invalid "
+            f"(failed logic/live-link: {logic_fail}, failed capacity: {capacity_fail})"
+        )
 
         return {
             "validated_paths": validated,
