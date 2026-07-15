@@ -6,6 +6,9 @@ from simulation import ControllerAPI, TopologySnapshot
 
 from candidate_generator import CandidateGenerator
 
+from config import DELAY_BUDGET_MS
+from deterministic_selector import DeterministicPathSelector
+
 Node = str
 FlowKey = Tuple[Node, Node]
 
@@ -17,6 +20,7 @@ class DeterministicPolicyEngine:
         self.candidate_generator = CandidateGenerator(
             candidates_per_flow=candidates_per_flow
         )
+        self.selector = DeterministicPathSelector()
 
     def route_flows(
         self,
@@ -40,8 +44,23 @@ class DeterministicPolicyEngine:
             #Debugging
             #print(f"[CandidateGenerator] " + src + "->" + dst + ": " + str(candidates))
 
-            if candidates:
-                paths[(src, dst)] = candidates[0]
+            selected_path = self.selector.select(
+                graph=graph,
+                candidates=candidates,
+                demand_mbps=demand_mbps,
+                delay_budget_ms=DELAY_BUDGET_MS,
+            )
+
+            #Debugging: comparing against shortest-path baseline
+            #baseline_path = self._shortest_path(graph, src, dst)
+            #if selected_path and selected_path != baseline_path:
+            #    print(
+            #        f"[SLA-aware] {src}->{dst}: demand={demand_mbps:.1f} "
+            #        f"agentic={selected_path} vs shortest={baseline_path}"
+            #    )
+
+            if selected_path:
+                paths[(src, dst)] = selected_path
 
         return paths
 
