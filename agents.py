@@ -14,6 +14,8 @@ from llm_path_selector import LLMPathSelector
 from path_tools import path_is_feasible
 from policy_engine import LLMPolicyEngine, BaseCandidatePolicy
 
+from deterministic_selector import DeterministicPathSelector
+
 Node = str
 FlowKey = Tuple[Node, Node]
 
@@ -24,10 +26,38 @@ class RoutingAgent(BaseCandidatePolicy):
         self.llm_client = LLMClient()
         self.llm_selector = LLMPathSelector(self.llm_client)
         self.graph = self._build_workflow()
+        self.deterministic_selector = DeterministicPathSelector()
+
+    def _repair(self, state: RoutingState) -> dict:
+        repaired = dict(state.get("validated_paths", {}))
+        invalid_flows = state.get("invalid_flows", [])
+        rescued = 0
+
+        for flow in invalid_flows:
+            candidates = state["candidates"].get(flow, [])
+            selected = (
+                self.deterministic_selector.select(
+                graph=state["graph"],
+                candidates=candidates,
+                demand_mbps=state["demands"][flow],
+                delay_budget_ms=DELAY_BUDGET_MS,
+                )
+            )
+            if selected:
+                repaired[flow] = selected
+                rescued += 1
+
+        # Debugging: how many invalid flows did the deterministic fallback rescue
+        print(f"[RoutingAgent] repair: {rescued}/{len(invalid_flows)} invalid flows rescued")
+
+        return {
+            "validated_paths": repaired,
+        }
     
     def _build_workflow(self):
         builder = StateGraph(RoutingState)
 
+        builder.add_node("repair", self._repair)
         builder.add_node("perceive", self._perceive)
         builder.add_node("generate_candidates", self._generate_candidates_node)
         builder.add_node("select", self._select)
@@ -36,7 +66,15 @@ class RoutingAgent(BaseCandidatePolicy):
         builder.add_edge("perceive", "generate_candidates")
         builder.add_edge("generate_candidates", "select")
         builder.add_edge("select", "validate")
-        builder.add_edge("validate", END)
+        builder.add_conditional_edges(
+            "validate",
+            self._after_validation,
+            {
+                "repair": "repair",
+                "finish": END,
+            },
+        )
+        builder.add_edge("repair", END)
 
         return builder.compile()
 
@@ -99,6 +137,11 @@ class RoutingAgent(BaseCandidatePolicy):
             "validated_paths": validated,
             "invalid_flows": invalid_flows,
         }
+
+    def _after_validation(self, state: RoutingState) -> str:
+        if state.get("invalid_flows"):
+            return "repair"
+        return "finish"
     
     def get_stats(self):
         return self.llm_client.get_stats()
