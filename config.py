@@ -25,7 +25,7 @@ random_seed = 42
 
 load_dotenv()
 
-OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_MY_API_KEY")
 LLM_BACKEND = os.getenv("LLM_BACKEND", "openrouter")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
