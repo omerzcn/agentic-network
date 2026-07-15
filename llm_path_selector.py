@@ -23,6 +23,9 @@ class LLMPathSelector:
             demands: Dict[FlowKey, float],
             delay_budget_ms: float,
     ) -> Dict[FlowKey, List[Node]]:
+        if not candidates_by_flow:      # Shortcut: If there is nothing to ask, no API call
+            return {}
+
         prompt = self._build_prompt(
             graph=graph,
             candidates_by_flow=candidates_by_flow,

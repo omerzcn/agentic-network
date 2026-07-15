@@ -59,11 +59,13 @@ class RoutingAgent(BaseCandidatePolicy):
 
         builder.add_node("repair", self._repair)
         builder.add_node("perceive", self._perceive)
+        builder.add_node("reuse", self._reuse)
         builder.add_node("generate_candidates", self._generate_candidates_node)
         builder.add_node("select", self._select)
         builder.add_node("validate", self._validate)
         builder.add_edge(START, "perceive")
-        builder.add_edge("perceive", "generate_candidates")
+        builder.add_edge("perceive", "reuse")
+        builder.add_edge("reuse", "generate_candidates")
         builder.add_edge("generate_candidates", "select")
         builder.add_edge("select", "validate")
         builder.add_conditional_edges(
@@ -84,29 +86,46 @@ class RoutingAgent(BaseCandidatePolicy):
                 "demands": demands,
             }
         )
-        return result.get("validated_paths", {})
-    
+        return {
+            **result.get("reused_paths", {}),
+            **result.get("validated_paths", {}),
+        }
+
     def _perceive(self, state: RoutingState) -> dict:
         topology = self.ctrl.get_topology_snapshot()
         graph = self._build_graph(topology)
         return {
             "graph": graph,
         }
-    
+
+    def _reuse(self, state: RoutingState) -> dict:
+        reused, remaining = self._reuse_existing_paths(
+            graph=state["graph"],
+            demands=state["demands"],
+        )
+
+        # Debugging: how many flows were reused vs sent on to the LLM
+        print(f"[RoutingAgent] reuse: {len(reused)} reused, {len(remaining)} sent to LLM")
+
+        return {
+            "reused_paths": reused,
+            "remaining_demands": remaining,
+        }
+
     def _generate_candidates_node(self, state: RoutingState) -> dict:
         candidates = self._generate_all_candidates(
             graph=state["graph"],
-            demands=state["demands"],
+            demands=state["remaining_demands"],
         )
         return {
             "candidates": candidates,
         }
-    
+
     def _select(self, state: RoutingState) -> dict:
         selected_paths = self.llm_selector.select(
             graph=state["graph"],
             candidates_by_flow=state["candidates"],
-            demands=state["demands"],
+            demands=state["remaining_demands"],
             delay_budget_ms=DELAY_BUDGET_MS,
         )
         return {

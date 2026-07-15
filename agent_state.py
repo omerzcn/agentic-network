@@ -13,6 +13,8 @@ FlowKey = Tuple[Node, Node]
 class RoutingState(TypedDict, total=False):
     demands: Dict[FlowKey, float]
     graph: nx.Graph
+    reused_paths: Dict[FlowKey, List[Node]]
+    remaining_demands: Dict[FlowKey, float]
     candidates: Dict[FlowKey, List[List[Node]]]
     selected_paths: Dict[FlowKey, List[Node]]
     validated_paths: Dict[FlowKey, List[Node]]

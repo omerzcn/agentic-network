@@ -6,12 +6,13 @@ from typing import Dict, List, Tuple
 
 import networkx as nx
 
-from simulation import ControllerAPI, TopologySnapshot
+from simulation import ControllerAPI, FlowId, TopologySnapshot
 
 from candidate_generator import CandidateGenerator
 
 from config import DELAY_BUDGET_MS
 from deterministic_selector import DeterministicPathSelector
+from path_tools import path_is_feasible
 
 from llm_client import LLMClient
 from llm_path_selector import LLMPathSelector
@@ -59,6 +60,29 @@ class BaseCandidatePolicy:
                 candidates_by_flow[flow] = candidates
 
         return candidates_by_flow
+
+    def _reuse_existing_paths(self, graph: nx.Graph, demands: Dict[FlowKey, float]) -> Tuple[Dict[FlowKey, List[Node]], Dict[FlowKey, float]]:
+        flow_table = self.ctrl.get_flow_table_snapshot().flows
+
+        reused: Dict[FlowKey, List[Node]] = {}
+        remaining: Dict[FlowKey, float] = {}
+
+        for flow, demand in demands.items():
+            if demand <= 0:
+                continue
+
+            src, dst = flow
+            entry = flow_table.get(FlowId(src=src, dst=dst))
+
+            if entry is not None and entry.path:
+                still_valid = self.ctrl.validate_path_logic(src, dst, entry.path)
+                if still_valid and path_is_feasible(graph, entry.path, demand):
+                    reused[flow] = list(entry.path)
+                    continue
+
+            remaining[flow] = demand
+
+        return reused, remaining
 
 class DeterministicPolicyEngine(BaseCandidatePolicy):
     def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 3):
