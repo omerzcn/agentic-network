@@ -45,6 +45,7 @@ if __name__ == "__main__":
     # Collect metrics
     all_history = {}
     all_history_per_demand = {}
+    aggregate_acceptance = {}
 
     with Simulator(g, traffic, ctrl, llm_agent, verbosity=verbosity_level) as simulator:
         for algo in algorithms:
@@ -67,6 +68,8 @@ if __name__ == "__main__":
             drop_reason_counts = Counter()
             drop_reason_mbps = Counter()
             sla_totals = Counter()
+            total_accepted_mbps = 0.0
+            total_offered_mbps = 0.0
             for t in tqdm(range(num_steps)):
                 _, metrics = simulator.step(algo)
                 for k in metric_names:
@@ -85,12 +88,25 @@ if __name__ == "__main__":
                 sla_totals["delay_violating_flows"] += sla["delay_violating_flows"]
                 sla_totals["total_delay_excess_ms"] += sla["total_delay_excess_ms"]
 
+                # Weighted by Mbps (not per-step average), so busier steps count more
+                total_accepted_mbps += metrics["accepted"]
+                total_offered_mbps += metrics["total"]
+
             all_history[algo] = history
             all_history_per_demand[algo] = history_per_demand
+
+            acceptance_ratio = total_accepted_mbps / total_offered_mbps if total_offered_mbps > 0 else 0.0
+            aggregate_acceptance[algo] = acceptance_ratio
 
             print(f"[{algo}] drop reasons (count): {dict(drop_reason_counts)}")
             print(f"[{algo}] drop reasons (Mbps): {dict(drop_reason_mbps)}")
             print(f"[{algo}] SLA violations (of {num_steps} steps): {dict(sla_totals)}")
+            print(f"[{algo}] aggregate acceptance ratio: {acceptance_ratio:.4f} "
+                  f"({total_accepted_mbps:.1f}/{total_offered_mbps:.1f} Mbps)")
+
+        print("\nAggregate acceptance ratio by algorithm:")
+        for algo, ratio in aggregate_acceptance.items():
+            print(f"  {algo}: {ratio:.4f}")
 
     # Plot metrics
     fig, axes = plt.subplots(1, len(metric_names), figsize=(12, 4), sharex=True)
