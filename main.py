@@ -1,5 +1,6 @@
 import os
 import random
+from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,7 +37,7 @@ if __name__ == "__main__":
 
     # Setup controller + agent
     ctrl = ControllerAPI(g)
-    llm_agent = RoutingAgent(ctrl)
+    llm_agent = RoutingAgent(ctrl, candidates_per_flow=8)
 
     # Collect metrics
     all_history = {}
@@ -54,15 +55,23 @@ if __name__ == "__main__":
                 columns=[(src, dst) for src in g.nodes for dst in g.nodes],
                 index=range(num_steps),
             )
+            drop_reason_counts = Counter()
+            drop_reason_mbps = Counter()
             for t in tqdm(range(num_steps)):
                 _, metrics = simulator.step(algo)
                 for k in metric_names:
                     history[k].append(metrics.get(k, 0.0))
                 for item in metrics["accepted_demands"]:
                     history_per_demand.at[t, (item["src"], item["dst"])] = item["demand"]
+                for item in metrics["dropped_demands"]:
+                    drop_reason_counts[item["reason"]] += 1
+                    drop_reason_mbps[item["reason"]] += item["demand"]
 
             all_history[algo] = history
             all_history_per_demand[algo] = history_per_demand
+
+            print(f"[{algo}] drop reasons (count): {dict(drop_reason_counts)}")
+            print(f"[{algo}] drop reasons (Mbps): {dict(drop_reason_mbps)}")
 
     # Plot metrics
     fig, axes = plt.subplots(1, len(metric_names), figsize=(12, 4), sharex=True)
