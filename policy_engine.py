@@ -47,6 +47,7 @@ class BaseCandidatePolicy:
 
     def _generate_all_candidates(self, graph: nx.Graph, demands: Dict[FlowKey, float]) -> Dict[FlowKey, List[List[Node]]]:
         candidates_by_flow = {}
+        no_candidates = []
 
         for flow, demand in demands.items():
             if demand <= 0:
@@ -58,6 +59,14 @@ class BaseCandidatePolicy:
             )
             if candidates:
                 candidates_by_flow[flow] = candidates
+            else:
+                no_candidates.append(flow)
+
+        # Debugging: flows that never even reach the LLM, because the live
+        # graph snapshot had zero paths between src and dst at perceive-time
+        if no_candidates:
+            print(f"[BaseCandidatePolicy] {len(no_candidates)}/{sum(1 for d in demands.values() if d > 0)} "
+                  f"active flows had zero candidates in the live graph: {no_candidates}")
 
         return candidates_by_flow
 

@@ -1,0 +1,31 @@
+{
+  "llm_backend": "openrouter",
+  "llm_model": "deepseek/deepseek-v4-pro",
+  "llm_temperature": 0,
+  "random_seed": 42,
+  "num_steps": 100,
+  "delay_budget_ms": 15,
+  "algo_delays": {
+    "heuristic_no_delay": 0.0,
+    "heuristic_low_delay": 0.5,
+    "heuristic_high_delay": 10.0
+  },
+  "pdr_by_algorithm": {
+    "agentic": 0.4030506072615937
+  },
+  "sla_violations_by_algorithm": {
+    "agentic": {
+      "bandwidth_violation_steps": 68,
+      "bandwidth_violating_flows": 333,
+      "bandwidth_dropped_mbps": 3413.8213285375205,
+      "delay_violation_steps": 0,
+      "delay_violating_flows": 0,
+      "total_delay_excess_ms": 0.0
+    }
+  },
+  "llm_agent_stats": {
+    "llm_calls": 5,
+    "total_tokens": 9173,
+    "average_call_latency_s": 15.386440137599857
+  }
+}

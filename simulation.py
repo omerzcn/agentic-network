@@ -827,6 +827,16 @@ class Simulator:
 
         # 3. Return best available routes
         if self._last_agentic_paths is not None:
+            # Debugging: flows that started after this cached decision was
+            # submitted get no path at all until the next decision lands.
+            missing = [
+                flow for flow, demand in demands.items()
+                if demand > 0 and flow not in self._last_agentic_paths
+            ]
+            if missing and self.verbosity >= 1:
+                print(f"[t={self.t}] ⚠ {len(missing)} active flow(s) missing from the cached "
+                      f"agentic decision (submitted at t={self._agentic_submit_t}), no path "
+                      f"until the next one lands: {missing}")
             return self._last_agentic_paths
 
         # No agentic result yet — heuristic warm-start
@@ -970,7 +980,7 @@ class Simulator:
         metrics = self.compute_metrics(demands, suggested_paths)
 
         # Bump time and controller
-        time.sleep(0.1)
+        time.sleep(2.0)
         self.t += 1
         self.ctrl.step()
 

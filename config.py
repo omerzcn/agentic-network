@@ -4,6 +4,11 @@ from dotenv import load_dotenv
 num_steps = 100
 algorithms = ["heuristic_no_delay", "heuristic_low_delay", "heuristic_high_delay", "agentic"]
 
+# For quick debugging runs: ALGORITHMS=agentic python3 main.py
+_algorithms_override = os.getenv("ALGORITHMS")
+if _algorithms_override:
+    algorithms = [a.strip() for a in _algorithms_override.split(",") if a.strip()]
+
 colors = {
     "heuristic_no_delay": "blue",
     "heuristic_low_delay": "orange",

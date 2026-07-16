@@ -51,7 +51,14 @@ class LLMPathSelector:
                 continue
 
             paths[flow] = candidates[selected_index]
-        
+
+        # Debugging: flows the LLM never returned a usable pick for at all
+        # (as opposed to an invalid pick, which _validate/_repair would catch)
+        missing = set(candidates_by_flow.keys()) - set(paths.keys())
+        if missing:
+            print(f"[LLMPathSelector] {len(missing)}/{len(candidates_by_flow)} flows got no usable "
+                  f"selection from the LLM (dropped silently, never reach repair): {missing}")
+
         return paths
     
     @staticmethod

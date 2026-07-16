@@ -95,18 +95,27 @@ class RoutingAgent(BaseCandidatePolicy):
         # Final safety net just to be sure: re-check every path against the live network
         # right before handing it to the simulator.
         safe_paths = {}
+        rejected = 0
 
         for flow, path in paths.items():
             src, dst = flow
             demand = demands[flow]
 
             if not self.ctrl.validate_path_logic(src, dst, path):
+                rejected += 1
                 continue
 
             if not self.ctrl.validate_path_sla(path, demand):
+                rejected += 1
                 continue
 
             safe_paths[flow] = path
+
+        # Debugging: how many decisions the live network invalidated between
+        # being picked and being returned (no repair happens after this point)
+        if rejected:
+            print(f"[RoutingAgent] final safety check: {rejected}/{len(paths)} paths "
+                  f"rejected right before returning (network moved on since they were picked)")
 
         return safe_paths
 
