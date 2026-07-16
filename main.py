@@ -24,15 +24,16 @@ if __name__ == "__main__":
         if verbosity_level >= 1:
             print(f"Random seed set to: {random_seed}")
 
-    os.makedirs("results", exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    print(f"Results will be saved to: {RESULTS_DIR}")
 
     # Create network
     g = NetworkGraph()
     create_random_network(g, seed=random_seed, **network_args)
 
     # (Optional) visualize
-    g.draw_to_file("results/network.png", random_seed)
-    g.save_to_text_file("results/network.txt")
+    g.draw_to_file(f"{RESULTS_DIR}/network.png", random_seed)
+    g.save_to_text_file(f"{RESULTS_DIR}/network.txt")
 
     # Create traffic model
     base_demands = create_random_traffic_pattern(g, seed=random_seed, base_demand=base_demand, start_t_max=num_steps)
@@ -124,10 +125,10 @@ if __name__ == "__main__":
         ax.legend()
 
     fig.tight_layout()
-    fig.savefig("results/results.png", dpi=150)
+    fig.savefig(f"{RESULTS_DIR}/results.png", dpi=150)
     plt.close(fig)
 
     for algo in algorithms:
-        all_history_per_demand[algo].to_csv(f"results/all_history_{algo}.csv")
+        all_history_per_demand[algo].to_csv(f"{RESULTS_DIR}/all_history_{algo}.csv")
 
-    print("Simulation completed. Metric results were saved to results.png.")
+    print(f"Simulation completed. Metric results were saved to {RESULTS_DIR}/results.png.")

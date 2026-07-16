@@ -40,8 +40,8 @@ LLM_BACKEND = os.getenv("LLM_BACKEND", "openrouter")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
 
-# Saving results from different models into different folders, so no overwriting
-RESULTS_DIR = os.getenv("RESULTS_LABEL", "results") 
+RESULTS_LABEL = os.getenv("RESULTS_LABEL", LLM_MODEL.replace("/", "_"))
+RESULTS_DIR = os.path.join("results", RESULTS_LABEL)
 
 verbosity_level = 1  # 0: no print, 1: few prints (important messages), 2: more prints (detailed)
 
