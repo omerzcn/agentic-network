@@ -11,6 +11,15 @@ colors = {
     "agentic": "green",
 }
 
+# Added: heuristic_no_delay and heuristic_low_delay created identical curves,
+# so adding different line styles enables that each is visible perfectly.
+linestyles = {
+    "heuristic_no_delay": "-",
+    "heuristic_low_delay": "--",
+    "heuristic_high_delay": "-.",
+    "agentic": "--",
+}
+
 algo_delays = {
     "heuristic_no_delay": 0.0,
     "heuristic_low_delay": 0.5,

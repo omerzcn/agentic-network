@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
     for ax, name in zip(axes, metric_names):
         for algo in algorithms:
-            ax.plot(all_history[algo][name], label=algo, color=colors[algo])
+            ax.plot(all_history[algo][name], label=algo, color=colors[algo], linestyle=linestyles[algo])
         ax.set_title(name)
         ax.set_xlabel("time step")
         ax.set_ylabel(name)

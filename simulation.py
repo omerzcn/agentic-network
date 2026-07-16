@@ -970,7 +970,7 @@ class Simulator:
         metrics = self.compute_metrics(demands, suggested_paths)
 
         # Bump time and controller
-        time.sleep(2.0)
+        time.sleep(0.1)
         self.t += 1
         self.ctrl.step()
 
