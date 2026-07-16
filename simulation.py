@@ -827,17 +827,28 @@ class Simulator:
 
         # 3. Return best available routes
         if self._last_agentic_paths is not None:
-            # Debugging: flows that started after this cached decision was
-            # submitted get no path at all until the next decision lands.
-            missing = [
+            # Flows that started after this cached decision was submitted are
+            # missing from it entirely. Patching them in with a heuristic path
+            # instead of leaving them with nothing until the next decision lands.
+            missing = {
                 flow for flow, demand in demands.items()
                 if demand > 0 and flow not in self._last_agentic_paths
-            ]
-            if missing and self.verbosity >= 1:
+            }
+            if not missing:
+                return self._last_agentic_paths
+
+            if self.verbosity >= 1:
                 print(f"[t={self.t}] ⚠ {len(missing)} active flow(s) missing from the cached "
-                      f"agentic decision (submitted at t={self._agentic_submit_t}), no path "
-                      f"until the next one lands: {missing}")
-            return self._last_agentic_paths
+                      f"agentic decision (submitted at t={self._agentic_submit_t}); "
+                      f"using heuristic fallback for them until the next one lands.")
+
+            flow_snapshot = self.route_flows_heuristic(demands)
+            fallback_paths = {
+                (fid.src, fid.dst): entry.path
+                for fid, entry in flow_snapshot.flows.items()
+                if entry.path and (fid.src, fid.dst) in missing
+            }
+            return {**self._last_agentic_paths, **fallback_paths}
 
         # No agentic result yet — heuristic warm-start
         if self.verbosity >= 1:
