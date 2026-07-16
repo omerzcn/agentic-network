@@ -39,6 +39,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_MY_API_KEY")
 LLM_BACKEND = os.getenv("LLM_BACKEND", "openrouter")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
+LLM_TEMPERATURE = 0
 
 RESULTS_LABEL = os.getenv("RESULTS_LABEL", LLM_MODEL.replace("/", "_"))
 RESULTS_DIR = os.path.join("results", RESULTS_LABEL)

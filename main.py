@@ -1,3 +1,4 @@
+import json
 import os
 import random
 from collections import Counter
@@ -47,6 +48,7 @@ if __name__ == "__main__":
     all_history = {}
     all_history_per_demand = {}
     aggregate_acceptance = {}
+    aggregate_sla = {}
 
     with Simulator(g, traffic, ctrl, llm_agent, verbosity=verbosity_level) as simulator:
         for algo in algorithms:
@@ -98,6 +100,7 @@ if __name__ == "__main__":
 
             acceptance_ratio = total_accepted_mbps / total_offered_mbps if total_offered_mbps > 0 else 0.0
             aggregate_acceptance[algo] = acceptance_ratio
+            aggregate_sla[algo] = dict(sla_totals)
 
             print(f"[{algo}] drop reasons (count): {dict(drop_reason_counts)}")
             print(f"[{algo}] drop reasons (Mbps): {dict(drop_reason_mbps)}")
@@ -132,3 +135,20 @@ if __name__ == "__main__":
         all_history_per_demand[algo].to_csv(f"{RESULTS_DIR}/all_history_{algo}.csv")
 
     print(f"Simulation completed. Metric results were saved to {RESULTS_DIR}/results.png.")
+
+    # summary.json
+    summary = {
+        "llm_backend": LLM_BACKEND,
+        "llm_model": LLM_MODEL,
+        "llm_temperature": LLM_TEMPERATURE,
+        "random_seed": random_seed,
+        "num_steps": num_steps,
+        "delay_budget_ms": DELAY_BUDGET_MS,
+        "algo_delays": algo_delays,
+        "pdr_by_algorithm": aggregate_acceptance,
+        "sla_violations_by_algorithm": aggregate_sla,
+        "llm_agent_stats": llm_agent.get_stats(),
+    }
+    with open(f"{RESULTS_DIR}/summary.json", "w") as f:
+        json.dump(summary, f, indent=2)
+    print(f"Summary written to {RESULTS_DIR}/summary.json")

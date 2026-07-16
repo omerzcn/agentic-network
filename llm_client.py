@@ -7,7 +7,7 @@ import time
 from typing import Dict, Optional, Tuple
 import requests
 
-from config import LLM_BACKEND, LLM_MODEL, OLLAMA_URL, OPENROUTER_API_KEY, OPENROUTER_URL
+from config import LLM_BACKEND, LLM_MODEL, LLM_TEMPERATURE, OLLAMA_URL, OPENROUTER_API_KEY, OPENROUTER_URL
 
 class LLMClient:
     def __init__(self):
@@ -73,7 +73,7 @@ class LLMClient:
                     "content": prompt,
                 }
             ],
-            "temperature": 0,
+            "temperature": LLM_TEMPERATURE,
         }
         response = requests.post(
             OPENROUTER_URL,
@@ -97,7 +97,7 @@ class LLMClient:
                 }
             ],
             "stream": False,
-            "options": {"temperature": 0}
+            "options": {"temperature": LLM_TEMPERATURE}
         }
         response = requests.post(
             OLLAMA_URL,
