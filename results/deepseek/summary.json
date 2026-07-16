@@ -1,0 +1,58 @@
+{
+  "llm_backend": "openrouter",
+  "llm_model": "deepseek/deepseek-v4-pro",
+  "llm_temperature": 0,
+  "random_seed": 42,
+  "num_steps": 100,
+  "delay_budget_ms": 15,
+  "algo_delays": {
+    "heuristic_no_delay": 0.0,
+    "heuristic_low_delay": 0.5,
+    "heuristic_high_delay": 10.0
+  },
+  "pdr_by_algorithm": {
+    "heuristic_no_delay": 0.6897835213416448,
+    "heuristic_low_delay": 0.7871449843159011,
+    "heuristic_high_delay": 0.026870860625863892,
+    "agentic": 0.6812938193374657
+  },
+  "sla_violations_by_algorithm": {
+    "heuristic_no_delay": {
+      "bandwidth_violation_steps": 99,
+      "bandwidth_violating_flows": 1018,
+      "bandwidth_dropped_mbps": 12659.31538418228,
+      "delay_violation_steps": 26,
+      "delay_violating_flows": 52,
+      "total_delay_excess_ms": 76.51623276159984
+    },
+    "heuristic_low_delay": {
+      "bandwidth_violation_steps": 95,
+      "bandwidth_violating_flows": 593,
+      "bandwidth_dropped_mbps": 7611.111297649887,
+      "delay_violation_steps": 75,
+      "delay_violating_flows": 150,
+      "total_delay_excess_ms": 86.55268942272149
+    },
+    "heuristic_high_delay": {
+      "bandwidth_violation_steps": 2,
+      "bandwidth_violating_flows": 33,
+      "bandwidth_dropped_mbps": 409.8905746991795,
+      "delay_violation_steps": 0,
+      "delay_violating_flows": 0,
+      "total_delay_excess_ms": 0.0
+    },
+    "agentic": {
+      "bandwidth_violation_steps": 100,
+      "bandwidth_violating_flows": 1034,
+      "bandwidth_dropped_mbps": 12849.475389364392,
+      "delay_violation_steps": 28,
+      "delay_violating_flows": 56,
+      "total_delay_excess_ms": 82.40209682018445
+    }
+  },
+  "llm_agent_stats": {
+    "llm_calls": 0,
+    "total_tokens": 0,
+    "average_call_latency_s": 0.0
+  }
+}
