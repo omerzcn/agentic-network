@@ -112,8 +112,6 @@ class LLMPathSelector:
             (
                 "Return only a valid JSON object such as "
                 '{"A->B": 0, "C->D": 1}. '
-                "You must include every single flow listed below as a key, "
-                "do not skip any of them."
             ),
             (
                 "Do not return explanations, markdown, "

@@ -1,0 +1,58 @@
+{
+  "llm_backend": "openrouter",
+  "llm_model": "google/gemini-3.1-flash-lite",
+  "llm_temperature": 0,
+  "random_seed": 42,
+  "num_steps": 100,
+  "delay_budget_ms": 15,
+  "algo_delays": {
+    "heuristic_no_delay": 0.0,
+    "heuristic_low_delay": 0.5,
+    "heuristic_high_delay": 10.0
+  },
+  "pdr_by_algorithm": {
+    "heuristic_no_delay": 0.6920937318890273,
+    "heuristic_low_delay": 0.6920937318890273,
+    "heuristic_high_delay": 0.7931306901044484,
+    "agentic": 0.8495940318145955
+  },
+  "sla_violations_by_algorithm": {
+    "heuristic_no_delay": {
+      "bandwidth_violation_steps": 98,
+      "bandwidth_violating_flows": 1001,
+      "bandwidth_dropped_mbps": 12445.361093298377,
+      "delay_violation_steps": 0,
+      "delay_violating_flows": 0,
+      "total_delay_excess_ms": 0.0
+    },
+    "heuristic_low_delay": {
+      "bandwidth_violation_steps": 98,
+      "bandwidth_violating_flows": 1001,
+      "bandwidth_dropped_mbps": 12445.361093298377,
+      "delay_violation_steps": 0,
+      "delay_violating_flows": 0,
+      "total_delay_excess_ms": 0.0
+    },
+    "heuristic_high_delay": {
+      "bandwidth_violation_steps": 95,
+      "bandwidth_violating_flows": 597,
+      "bandwidth_dropped_mbps": 7340.364821136478,
+      "delay_violation_steps": 0,
+      "delay_violating_flows": 0,
+      "total_delay_excess_ms": 0.0
+    },
+    "agentic": {
+      "bandwidth_violation_steps": 76,
+      "bandwidth_violating_flows": 375,
+      "bandwidth_dropped_mbps": 4695.183420063188,
+      "delay_violation_steps": 60,
+      "delay_violating_flows": 109,
+      "total_delay_excess_ms": 279.7862922055826
+    }
+  },
+  "llm_agent_stats": {
+    "llm_calls": 76,
+    "total_tokens": 532347,
+    "average_call_latency_s": 1.7484356791053535
+  }
+}

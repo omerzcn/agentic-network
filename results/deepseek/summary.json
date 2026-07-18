@@ -11,48 +11,48 @@
     "heuristic_high_delay": 10.0
   },
   "pdr_by_algorithm": {
-    "heuristic_no_delay": 0.7288956064011626,
-    "heuristic_low_delay": 0.7288956064011626,
-    "heuristic_high_delay": 0.7950290277542725,
-    "agentic": 0.7284818947874346
+    "heuristic_no_delay": 0.7073411215017523,
+    "heuristic_low_delay": 0.7073411215017523,
+    "heuristic_high_delay": 0.7931306901044484,
+    "agentic": 0.7042537339925081
   },
   "sla_violations_by_algorithm": {
     "heuristic_no_delay": {
       "bandwidth_violation_steps": 99,
-      "bandwidth_violating_flows": 852,
-      "bandwidth_dropped_mbps": 10767.037035241749,
-      "delay_violation_steps": 0,
-      "delay_violating_flows": 0,
-      "total_delay_excess_ms": 0.0
+      "bandwidth_violating_flows": 953,
+      "bandwidth_dropped_mbps": 11938.01125764847,
+      "delay_violation_steps": 88,
+      "delay_violating_flows": 176,
+      "total_delay_excess_ms": 121.59056110428818
     },
     "heuristic_low_delay": {
       "bandwidth_violation_steps": 99,
-      "bandwidth_violating_flows": 852,
-      "bandwidth_dropped_mbps": 10767.037035241749,
-      "delay_violation_steps": 0,
-      "delay_violating_flows": 0,
-      "total_delay_excess_ms": 0.0
+      "bandwidth_violating_flows": 953,
+      "bandwidth_dropped_mbps": 11938.01125764847,
+      "delay_violation_steps": 88,
+      "delay_violating_flows": 176,
+      "total_delay_excess_ms": 121.59056110428818
     },
     "heuristic_high_delay": {
       "bandwidth_violation_steps": 95,
-      "bandwidth_violating_flows": 600,
-      "bandwidth_dropped_mbps": 7292.769492336827,
+      "bandwidth_violating_flows": 597,
+      "bandwidth_dropped_mbps": 7340.364821136478,
       "delay_violation_steps": 0,
       "delay_violating_flows": 0,
       "total_delay_excess_ms": 0.0
     },
     "agentic": {
-      "bandwidth_violation_steps": 82,
-      "bandwidth_violating_flows": 821,
-      "bandwidth_dropped_mbps": 9871.294825701507,
-      "delay_violation_steps": 8,
-      "delay_violating_flows": 16,
-      "total_delay_excess_ms": 21.647729854735246
+      "bandwidth_violation_steps": 93,
+      "bandwidth_violating_flows": 1073,
+      "bandwidth_dropped_mbps": 11811.502743155565,
+      "delay_violation_steps": 67,
+      "delay_violating_flows": 134,
+      "total_delay_excess_ms": 477.3710817955713
     }
   },
   "llm_agent_stats": {
-    "llm_calls": 14,
-    "total_tokens": 19732,
-    "average_call_latency_s": 10.574154723142856
+    "llm_calls": 4,
+    "total_tokens": 19132,
+    "average_call_latency_s": 40.92670383724999
   }
 }

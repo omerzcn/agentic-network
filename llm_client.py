@@ -31,6 +31,7 @@ class LLMClient:
 
     def select_paths(self, prompt: str, schema: Optional[dict] = None) -> Optional[Dict[str, int]]:
         start = time.perf_counter()
+        token_count = 0
         try:
             if LLM_BACKEND == "ollama":
                 content, token_count = self._call_ollama(prompt, schema=schema)
@@ -93,7 +94,7 @@ class LLMClient:
             OPENROUTER_URL,
             headers=headers,
             json=payload,
-            timeout=30,
+            timeout=120,
         )
         response.raise_for_status()
         data = response.json()
