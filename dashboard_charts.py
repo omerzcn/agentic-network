@@ -6,6 +6,21 @@ import networkx as nx
 import pandas as pd
 import plotly.graph_objects as go
 
+def render_centered_table_html(df: pd.DataFrame) -> str:
+    # Overview table in html format
+    html_df = df.rename(columns=lambda c: c.replace("\n", "<br>"))
+    table_html = html_df.to_html(index=False, escape=False, classes="centered-table", border=0)
+    style = (
+        "<style>\n"
+        ".centered-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }\n"
+        ".centered-table th, .centered-table td { text-align: center !important; padding: 8px 14px; }\n"
+        ".centered-table th { background-color: #2c3e50; color: white; font-weight: 600; }\n"
+        ".centered-table tr:nth-child(even) { background-color: rgba(128, 128, 128, 0.12); }\n"
+        "</style>\n"
+    )
+    return style + table_html
+
+
 ALGO_COLORS = {
     "heuristic_no_delay": "#1f77b4",
     "heuristic_low_delay": "#ff7f0e",

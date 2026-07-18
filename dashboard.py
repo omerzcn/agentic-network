@@ -2,6 +2,7 @@
 
 import streamlit as st
 
+import compare_results
 import dashboard_charts as dc
 import dashboard_data as dd
 from config import algorithms as ALL_ALGORITHMS
@@ -29,14 +30,13 @@ with tab_overview:
     st.subheader("Packet Delivery Ratio across all models")
     all_summaries = dd.load_all_summaries()
     st.plotly_chart(dc.build_comparison_chart(all_summaries), width="stretch")
-    st.dataframe(all_summaries, width="stretch")
+
+    ranked = all_summaries.sort_values("agentic", ascending=False, na_position="last")
+    display_df = compare_results.format_display_df(ranked)
+    st.markdown(dc.render_centered_table_html(display_df), unsafe_allow_html=True)
 
 with tab_kpis:
     st.subheader(f"Network KPIs - {selected_model}")
-    st.caption(
-        "Shows all four algorithms side by side, regardless of the sidebar's "
-        "algorithm selection - this is the heuristic-vs-agentic comparison."
-    )
     col1, col2 = st.columns(2)
     with col1:
         st.plotly_chart(dc.build_kpi_bars(summary), width="stretch")
@@ -47,13 +47,8 @@ with tab_kpis:
     st.plotly_chart(dc.build_utilization_timeseries(step_metrics), width="stretch")
 
 with tab_ai:
-    st.subheader(f"AI Model Metrics - {selected_model}")
-    st.caption("Only the 'agentic' algorithm calls an LLM - the heuristics never do.")
-
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Model", summary.get("llm_model", "-"))
-    c2.metric("Backend", summary.get("llm_backend", "-"))
-    c3.metric("Temperature", summary.get("llm_temperature", "-"))
+    st.markdown(f"## {summary.get('llm_model', selected_model)}")
+    st.caption(f"Backend: `{summary.get('llm_backend', '-')}`  ·  Temperature: {summary.get('llm_temperature', '-')}")
 
     stats = summary.get("llm_agent_stats", {})
     c1, c2, c3 = st.columns(3)
@@ -104,7 +99,11 @@ with tab_topology:
                    "gray means link down.")
     with col_events:
         st.markdown("**SLA violation / drop events at this step**")
-        step_drops = drops[(drops["algo"] == selected_algo) & (drops["step"] == step)]
+        # demand<=0 rows are flows that haven't started yet, not real drops.
+        # So they're excluded from the table.
+        step_drops = drops[
+            (drops["algo"] == selected_algo) & (drops["step"] == step) & (drops["demand"] > 1e-12)
+        ]
         if step_drops.empty:
             st.caption("No dropped flows at this step.")
         else:

@@ -38,7 +38,8 @@ def load_summaries(results_dir: str = "results") -> pd.DataFrame:
 
     return pd.DataFrame(rows)
 
-def render_table_image(df: pd.DataFrame, out_path: str) -> None:
+def format_display_df(df: pd.DataFrame) -> pd.DataFrame:
+    # Shared formatting for static PNG table and the dashboard's overview
     display_df = df.rename(columns={
         "model": "Model",
         "heuristic_no_delay": "Heuristic\n(no delay)",
@@ -54,6 +55,10 @@ def render_table_image(df: pd.DataFrame, out_path: str) -> None:
         display_df[col] = display_df[col].map(lambda v: f"{v:.2%}" if pd.notnull(v) else "-")
     display_df["Avg latency\n(s)"] = display_df["Avg latency\n(s)"].map(lambda v: f"{v:.2f}" if pd.notnull(v) else "-")
     display_df["Flow\ndecisions"] = display_df["Flow\ndecisions"].map(lambda v: f"{int(v)}" if pd.notnull(v) else "-")
+    return display_df
+
+def render_table_image(df: pd.DataFrame, out_path: str) -> None:
+    display_df = format_display_df(df)
 
     n_rows, n_cols = display_df.shape
     fig, ax = plt.subplots(figsize=(1.6 * n_cols, 0.6 * (n_rows + 1)))
