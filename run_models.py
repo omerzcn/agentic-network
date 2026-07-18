@@ -5,9 +5,9 @@ import subprocess
 import sys
 
 RUNS = [
-    #{"backend": "openrouter", "model": "openai/gpt-4o-mini", "label": "gpt4o_mini"},
+    {"backend": "openrouter", "model": "openai/gpt-4o-mini", "label": "gpt4o_mini"},
     #{"backend": "openrouter", "model": "anthropic/claude-sonnet-4.6", "label": "claude_sonnet_4_6"},
-    {"backend": "openrouter", "model": "deepseek/deepseek-v4-pro", "label": "deepseek"},
+    #{"backend": "openrouter", "model": "deepseek/deepseek-v4-pro", "label": "deepseek"},
     #{"backend": "ollama", "model": "llama3.2", "label": "llama3_2_local"},
 ]
 

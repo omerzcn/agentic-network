@@ -18,8 +18,6 @@
 
 from typing import Dict, List, Optional, Tuple
 
-import networkx as nx
-
 from config import DELAY_BUDGET_MS
 from deterministic_selector import DeterministicPathSelector
 from policy_engine import BaseCandidatePolicy
@@ -27,7 +25,6 @@ from simulation import ControllerAPI, FlowId
 
 Node = str
 FlowKey = Tuple[Node, Node]
-Link = Tuple[Node, Node]
 
 class DeterministicGlobalTE(BaseCandidatePolicy):
     def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 8):
@@ -85,40 +82,11 @@ class DeterministicGlobalTE(BaseCandidatePolicy):
 
         return assigned
 
-    def _residual_capacities(self) -> Dict[Link, float]:
-        return {
-            link: data["capacity"] - data["util"]
-            for link, data in self.ctrl.g.links.items()
-            if data["up"]
-        }
-
-    def _residual_graph(self, residual: Dict[Link, float]) -> nx.DiGraph:
-        # Every up link gets an edge, even at zero/negative residual. So an
-        # already-installed path that's now saturated is correctly treated
-        # as infeasible (by path_is_feasible) instead of crashing on a
-        # missing edge when this candidate is checked.
-        graph = nx.DiGraph()
-        graph.add_nodes_from(self.ctrl.g.nodes)
-
-        for (u, v), left in residual.items():
-            graph.add_edge(
-                u, v,
-                weight=self.ctrl.g.links[(u, v)]["weight"],
-                latency_ms=self.ctrl.g.links[(u, v)]["latency"],
-                capacity_mbps=left,
-            )
-        return graph
-
     def _existing_path(self, src: Node, dst: Node) -> Optional[List[Node]]:
         entry = self.ctrl.get_flow_table_snapshot().flows.get(FlowId(src=src, dst=dst))
         if entry is not None and entry.path and self.ctrl.validate_path_logic(src, dst, entry.path):
             return list(entry.path)
         return None
-
-    @staticmethod
-    def _reserve(residual: Dict[Link, float], path: List[Node], demand: float) -> None:
-        for i in range(len(path) - 1):
-            residual[(path[i], path[i + 1])] -= demand
 
     def get_stats(self) -> dict:
         # No LLM calls happen in this policy. That's why, for interface compatibility with

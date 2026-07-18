@@ -52,8 +52,7 @@ class LLMPathSelector:
 
             paths[flow] = candidates[selected_index]
 
-        # Debugging: flows the LLM never returned a usable pick for at all
-        # (as opposed to an invalid pick, which _validate/_repair would catch)
+        # Debugging: flows the LLM never returned a usable pick for at all.
         missing = set(candidates_by_flow.keys()) - set(paths.keys())
         if missing:
             print(f"[LLMPathSelector] {len(missing)}/{len(candidates_by_flow)} flows got no usable "
@@ -73,6 +72,11 @@ class LLMPathSelector:
                 "You are selecting network routes. "
                 "For each flow, choose exactly one candidate "
                 "path by integer index."
+            ),
+            (
+                "The 'available' number for each path is the capacity "
+                "actually left on its tightest link right now, after "
+                "other flows' current usage, not the link's total capacity."
             ),
             (
                 "Prefer a path that can carry the demand and "
@@ -122,7 +126,7 @@ class LLMPathSelector:
                     + " | latency="
                     + str(round(latency, 2))
                     + " ms"
-                    + " | bottleneck="
+                    + " | available="
                     + str(round(bottleneck, 2))
                     + " Mbps"
                 )

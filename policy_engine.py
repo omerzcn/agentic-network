@@ -19,6 +19,7 @@ from llm_path_selector import LLMPathSelector
 
 Node = str
 FlowKey = Tuple[Node, Node]
+Link = Tuple[Node, Node]
 
 class BaseCandidatePolicy:
     def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 3):
@@ -44,6 +45,35 @@ class BaseCandidatePolicy:
             )
 
         return graph
+
+    def _residual_capacities(self) -> Dict[Link, float]:
+        # How much capacity is actually left per direction, not the link's total capacity.
+        # This is what makes a policy capacity-aware
+        return {
+            link: data["capacity"] - data["util"]
+            for link, data in self.ctrl.g.links.items()
+            if data["up"]
+        }
+
+    def _residual_graph(self, residual: Dict[Link, float]) -> nx.DiGraph:
+        # Every up link gets an edge, so a saturated link is correctly treated as infeasible
+        # (by path_is_feasible) instead of crashing.
+        graph = nx.DiGraph()
+        graph.add_nodes_from(self.ctrl.g.nodes)
+
+        for (u, v), left in residual.items():
+            graph.add_edge(
+                u, v,
+                weight=self.ctrl.g.links[(u, v)]["weight"],
+                latency_ms=self.ctrl.g.links[(u, v)]["latency"],
+                capacity_mbps=left,
+            )
+        return graph
+
+    @staticmethod
+    def _reserve(residual: Dict[Link, float], path: List[Node], demand: float) -> None:
+        for i in range(len(path) - 1):
+            residual[(path[i], path[i + 1])] -= demand
 
     def _generate_all_candidates(self, graph: nx.Graph, demands: Dict[FlowKey, float]) -> Dict[FlowKey, List[List[Node]]]:
         candidates_by_flow = {}

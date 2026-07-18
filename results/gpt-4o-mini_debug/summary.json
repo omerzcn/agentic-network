@@ -1,0 +1,31 @@
+{
+  "llm_backend": "openrouter",
+  "llm_model": "openai/gpt-4o-mini",
+  "llm_temperature": 0,
+  "random_seed": 42,
+  "num_steps": 100,
+  "delay_budget_ms": 15,
+  "algo_delays": {
+    "heuristic_no_delay": 0.0,
+    "heuristic_low_delay": 0.5,
+    "heuristic_high_delay": 10.0
+  },
+  "pdr_by_algorithm": {
+    "agentic": 0.8173917584861145
+  },
+  "sla_violations_by_algorithm": {
+    "agentic": {
+      "bandwidth_violation_steps": 78,
+      "bandwidth_violating_flows": 534,
+      "bandwidth_dropped_mbps": 6256.651405523387,
+      "delay_violation_steps": 48,
+      "delay_violating_flows": 94,
+      "total_delay_excess_ms": 242.9236224238356
+    }
+  },
+  "llm_agent_stats": {
+    "llm_calls": 43,
+    "total_tokens": 173154,
+    "average_call_latency_s": 3.5145580802093104
+  }
+}
