@@ -10,11 +10,14 @@ from tqdm import tqdm
 
 from agents import RoutingAgent
 from config import *
+
 from helpers import create_random_network, create_random_traffic_pattern
 
 from simulation import NetworkGraph, TrafficModel, ControllerAPI, Simulator
 
 from metrics_logger import compute_sla_metrics
+
+from global_te_policy import DeterministicGlobalTE
 
 if __name__ == "__main__":
 
@@ -40,9 +43,13 @@ if __name__ == "__main__":
     base_demands = create_random_traffic_pattern(g, seed=random_seed, base_demand=base_demand, start_t_max=num_steps)
     traffic = TrafficModel(base_demands, **traffic_args)
 
-    # Setup controller + agent
+    # Setup controller
     ctrl = ControllerAPI(g)
-    llm_agent = RoutingAgent(ctrl, candidates_per_flow=8)
+    if POLICY_MODE == "global_te":
+        llm_agent = DeterministicGlobalTE(ctrl, candidates_per_flow=8)
+    else:
+        llm_agent = RoutingAgent(ctrl, candidates_per_flow=8)
+    print(f"Policy for the 'agentic' slot: {POLICY_MODE}")
 
     # Collect metrics
     all_history = {}

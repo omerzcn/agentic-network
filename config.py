@@ -46,7 +46,10 @@ LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
 LLM_TEMPERATURE = 0
 
-RESULTS_LABEL = os.getenv("RESULTS_LABEL", LLM_MODEL.replace("/", "_"))
+# Which policy plugs into the "agentic" slot: "llm" or "global_te" (DeterministicGlobalTE, no LLM involved).
+POLICY_MODE = os.getenv("POLICY_MODE", "llm")
+
+RESULTS_LABEL = os.getenv("RESULTS_LABEL", "global_te" if POLICY_MODE == "global_te" else LLM_MODEL.replace("/", "_"))
 RESULTS_DIR = os.path.join("results", RESULTS_LABEL)
 
 verbosity_level = 1  # 0: no print, 1: few prints (important messages), 2: more prints (detailed)

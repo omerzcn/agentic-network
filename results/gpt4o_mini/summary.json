@@ -1,6 +1,6 @@
 {
   "llm_backend": "openrouter",
-  "llm_model": "deepseek/deepseek-v4-pro",
+  "llm_model": "openai/gpt-4o-mini",
   "llm_temperature": 0,
   "random_seed": 42,
   "num_steps": 100,
@@ -11,48 +11,48 @@
     "heuristic_high_delay": 10.0
   },
   "pdr_by_algorithm": {
-    "heuristic_no_delay": 0.7288956064011626,
-    "heuristic_low_delay": 0.7288956064011626,
+    "heuristic_no_delay": 0.7278272874994284,
+    "heuristic_low_delay": 0.7278272874994284,
     "heuristic_high_delay": 0.7950290277542725,
-    "agentic": 0.7284818947874346
+    "agentic": 0.6305792310135038
   },
   "sla_violations_by_algorithm": {
     "heuristic_no_delay": {
       "bandwidth_violation_steps": 99,
-      "bandwidth_violating_flows": 852,
-      "bandwidth_dropped_mbps": 10767.037035241749,
+      "bandwidth_violating_flows": 858,
+      "bandwidth_dropped_mbps": 10843.597029934523,
       "delay_violation_steps": 0,
       "delay_violating_flows": 0,
       "total_delay_excess_ms": 0.0
     },
     "heuristic_low_delay": {
       "bandwidth_violation_steps": 99,
-      "bandwidth_violating_flows": 852,
-      "bandwidth_dropped_mbps": 10767.037035241749,
+      "bandwidth_violating_flows": 858,
+      "bandwidth_dropped_mbps": 10843.597029934523,
       "delay_violation_steps": 0,
       "delay_violating_flows": 0,
       "total_delay_excess_ms": 0.0
     },
     "heuristic_high_delay": {
       "bandwidth_violation_steps": 95,
-      "bandwidth_violating_flows": 600,
-      "bandwidth_dropped_mbps": 7292.769492336827,
+      "bandwidth_violating_flows": 599,
+      "bandwidth_dropped_mbps": 7278.402946459702,
       "delay_violation_steps": 0,
       "delay_violating_flows": 0,
       "total_delay_excess_ms": 0.0
     },
     "agentic": {
-      "bandwidth_violation_steps": 82,
-      "bandwidth_violating_flows": 821,
-      "bandwidth_dropped_mbps": 9871.294825701507,
-      "delay_violation_steps": 8,
-      "delay_violating_flows": 16,
-      "total_delay_excess_ms": 21.647729854735246
+      "bandwidth_violation_steps": 91,
+      "bandwidth_violating_flows": 1363,
+      "bandwidth_dropped_mbps": 15543.04261268715,
+      "delay_violation_steps": 0,
+      "delay_violating_flows": 0,
+      "total_delay_excess_ms": 0.0
     }
   },
   "llm_agent_stats": {
-    "llm_calls": 14,
-    "total_tokens": 19732,
-    "average_call_latency_s": 10.574154723142856
+    "llm_calls": 48,
+    "total_tokens": 47753,
+    "average_call_latency_s": 1.7865207624999282
   }
 }
