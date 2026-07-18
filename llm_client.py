@@ -7,7 +7,7 @@ import time
 from typing import Dict, Optional, Tuple
 import requests
 
-from config import LLM_BACKEND, LLM_MODEL, LLM_TEMPERATURE, OLLAMA_URL, OPENROUTER_API_KEY, OPENROUTER_URL
+from config import LLM_BACKEND, LLM_MODEL, LLM_TEMPERATURE, OLLAMA_KEEP_ALIVE, OLLAMA_URL, OPENROUTER_API_KEY, OPENROUTER_URL
 
 class LLMClient:
     def __init__(self):
@@ -15,11 +15,25 @@ class LLMClient:
         self.total_tokens = 0
         self.total_latency_s = 0
 
-    def select_paths(self, prompt: str) -> Optional[Dict[str, int]]:
+    def warm_up(self) -> None:
+        # Loading Ollama into memory on first request, because it takes long time with no GPU
+        if LLM_BACKEND != "ollama":
+            return
+
+        print(f"[LLMClient] Warming up local model '{LLM_MODEL}' (loading into memory)...")
+        start = time.perf_counter()
+        try:
+            self._call_ollama('Reply with exactly this JSON: {"status": "ok"}', timeout=300)
+        except requests.RequestException as exc:
+            print(f"[LLMClient] Warm-up failed: {exc}")
+            return
+        print(f"[LLMClient] Warm-up done in {time.perf_counter() - start:.1f}s")
+
+    def select_paths(self, prompt: str, schema: Optional[dict] = None) -> Optional[Dict[str, int]]:
         start = time.perf_counter()
         try:
             if LLM_BACKEND == "ollama":
-                content, token_count = self._call_ollama(prompt)
+                content, token_count = self._call_ollama(prompt, schema=schema)
             elif LLM_BACKEND == "openrouter":
                 content, token_count = self._call_openrouter(prompt)
             else:
@@ -87,7 +101,7 @@ class LLMClient:
         usage = data.get("usage", {}).get("total_tokens", 0)
         return content, int(usage)
     
-    def _call_ollama(self, prompt: str) -> Tuple[str, int]:
+    def _call_ollama(self, prompt: str, timeout: int = 180, schema: Optional[dict] = None) -> Tuple[str, int]:
         payload = {
             "model": LLM_MODEL,
             "messages": [
@@ -97,12 +111,16 @@ class LLMClient:
                 }
             ],
             "stream": False,
-            "options": {"temperature": LLM_TEMPERATURE}
+            "keep_alive": OLLAMA_KEEP_ALIVE,
+            # A schema with required keys forces the local model to produce a
+            # value for every one of them
+            "format": schema if schema is not None else "json",
+            "options": {"temperature": LLM_TEMPERATURE, "num_predict": -1},
         }
         response = requests.post(
             OLLAMA_URL,
             json=payload,
-            timeout=120,
+            timeout=timeout,
         )
         response.raise_for_status()
         data = response.json()

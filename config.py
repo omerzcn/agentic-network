@@ -44,7 +44,14 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_MY_API_KEY")
 LLM_BACKEND = os.getenv("LLM_BACKEND", "openrouter")
 LLM_MODEL = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
+
+# Keeping Ollama loaded in memory between calls
+OLLAMA_KEEP_ALIVE = os.getenv("OLLAMA_KEEP_ALIVE", "30m")
+
 LLM_TEMPERATURE = 0
+
+# Llama struggle with long prompts, so keeping the candidate list smaller 
+CANDIDATES_PER_FLOW = int(os.getenv("CANDIDATES_PER_FLOW", "4" if LLM_BACKEND == "ollama" else "8"))
 
 # Which policy plugs into the "agentic" slot: "llm" or "global_te" (DeterministicGlobalTE, no LLM involved).
 POLICY_MODE = os.getenv("POLICY_MODE", "llm")

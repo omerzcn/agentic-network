@@ -32,7 +32,8 @@ class LLMPathSelector:
             demands=demands,
             delay_budget_ms=delay_budget_ms,
         )
-        selections = self.client.select_paths(prompt)
+        schema = self._build_schema(candidates_by_flow)
+        selections = self.client.select_paths(prompt, schema=schema)
 
         if selections is None:
             return {}
@@ -59,7 +60,29 @@ class LLMPathSelector:
                   f"selection from the LLM (dropped silently, never reach repair): {missing}")
 
         return paths
-    
+
+    @staticmethod
+    def _build_schema(candidates_by_flow: Dict[FlowKey, List[List[Node]]]) -> dict:
+        # A JSON Schema with every flow marked required. Ollama cannot finish
+        # generating without producing a value for every required key
+        properties = {}
+        required = []
+
+        for flow, candidates in candidates_by_flow.items():
+            label = flow[0] + "->" + flow[1]
+            properties[label] = {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": len(candidates) - 1,
+            }
+            required.append(label)
+
+        return {
+            "type": "object",
+            "properties": properties,
+            "required": required,
+        }
+
     @staticmethod
     def _build_prompt(
         graph: nx.Graph,
@@ -88,7 +111,9 @@ class LLMPathSelector:
             ),
             (
                 "Return only a valid JSON object such as "
-                '{"A->B": 0, "C->D": 1}.'
+                '{"A->B": 0, "C->D": 1}. '
+                "You must include every single flow listed below as a key, "
+                "do not skip any of them."
             ),
             (
                 "Do not return explanations, markdown, "

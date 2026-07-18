@@ -48,7 +48,8 @@ if __name__ == "__main__":
     if POLICY_MODE == "global_te":
         llm_agent = DeterministicGlobalTE(ctrl, candidates_per_flow=8)
     else:
-        llm_agent = RoutingAgent(ctrl, candidates_per_flow=8)
+        llm_agent = RoutingAgent(ctrl, candidates_per_flow=CANDIDATES_PER_FLOW)
+        llm_agent.llm_client.warm_up()
     print(f"Policy for the 'agentic' slot: {POLICY_MODE}")
 
     # Collect metrics
