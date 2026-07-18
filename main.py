@@ -3,6 +3,11 @@ import os
 import random
 from collections import Counter
 
+# matplot crushed my laptop by trying to oopen a tool in background.
+# So, this prevent opening a new window, just saves pictures to files.
+import matplotlib
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,8 +19,6 @@ from config import *
 from helpers import create_random_network, create_random_traffic_pattern
 
 from simulation import NetworkGraph, TrafficModel, ControllerAPI, Simulator
-
-from metrics_logger import compute_sla_metrics
 
 from global_te_policy import DeterministicGlobalTE
 
@@ -40,15 +43,21 @@ if __name__ == "__main__":
     g.save_to_text_file(f"{RESULTS_DIR}/network.txt")
 
     # Create traffic model
-    base_demands = create_random_traffic_pattern(g, seed=random_seed, base_demand=base_demand, start_t_max=num_steps)
+    base_demands = create_random_traffic_pattern(
+        g,
+        seed=random_seed,
+        base_demand=base_demand,
+        start_t_max=num_steps,
+        **traffic_pattern_args,
+    )
     traffic = TrafficModel(base_demands, **traffic_args)
 
     # Setup controller
     ctrl = ControllerAPI(g)
     if POLICY_MODE == "global_te":
-        llm_agent = DeterministicGlobalTE(ctrl, candidates_per_flow=8)
+        llm_agent = DeterministicGlobalTE(ctrl, candidates_per_flow=8, traffic=traffic)
     else:
-        llm_agent = RoutingAgent(ctrl, candidates_per_flow=CANDIDATES_PER_FLOW)
+        llm_agent = RoutingAgent(ctrl, candidates_per_flow=CANDIDATES_PER_FLOW, traffic=traffic)
         llm_agent.llm_client.warm_up()
     print(f"Policy for the 'agentic' slot: {POLICY_MODE}")
 
@@ -57,6 +66,17 @@ if __name__ == "__main__":
     all_history_per_demand = {}
     aggregate_acceptance = {}
     aggregate_sla = {}
+
+    request_outcome_keys = [
+        ("Accepted", "accepted_request_count", "#4c78a8"),
+        ("Rejected: delay/SLA", "delay_dropped_request_count", "#f58518"),
+        ("Rejected: no valid path", "no_valid_path_request_count", "#e45756"),
+        ("Rejected: other", "other_dropped_request_count", "#72b7b2"),
+    ]
+    request_outcome_totals = {
+        algo: {key: 0 for _, key, _ in request_outcome_keys}
+        for algo in algorithms
+    }
 
     with Simulator(g, traffic, ctrl, llm_agent, verbosity=verbosity_level) as simulator:
         for algo in algorithms:
@@ -90,14 +110,19 @@ if __name__ == "__main__":
                 for item in metrics["dropped_demands"]:
                     drop_reason_counts[item["reason"]] += 1
                     drop_reason_mbps[item["reason"]] += item["demand"]
+                for _, key, _ in request_outcome_keys:
+                    request_outcome_totals[algo][key] += metrics.get(key, 0)
 
-                sla = compute_sla_metrics(ctrl, metrics, DELAY_BUDGET_MS)
-                sla_totals["bandwidth_violation_steps"] += sla["bandwidth_violation"]
-                sla_totals["bandwidth_violating_flows"] += sla["bandwidth_violating_flows"]
-                sla_totals["bandwidth_dropped_mbps"] += sla["bandwidth_dropped_mbps"]
-                sla_totals["delay_violation_steps"] += sla["delay_violation"]
-                sla_totals["delay_violating_flows"] += sla["delay_violating_flows"]
-                sla_totals["total_delay_excess_ms"] += sla["total_delay_excess_ms"]
+                # Per-flow latency SLA is now enforced inside compute_metrics itself
+                # (a demand whose path misses its own max_latency_ms is dropped with
+                # reason "latency_requirement_not_met"), so these are just straight
+                # accumulations of the fields it already returns.
+                sla_totals["active_request_count"] += metrics["active_request_count"]
+                sla_totals["accepted_request_count"] += metrics["accepted_request_count"]
+                sla_totals["delay_dropped_request_count"] += metrics["delay_dropped_request_count"]
+                sla_totals["no_valid_path_request_count"] += metrics["no_valid_path_request_count"]
+                sla_totals["other_dropped_request_count"] += metrics["other_dropped_request_count"]
+                sla_totals["delay_dropped_mbps"] += metrics["latency_dropped"]
 
                 # Weighted by Mbps (not per-step average), so busier steps count more
                 total_accepted_mbps += metrics["accepted"]
@@ -139,10 +164,35 @@ if __name__ == "__main__":
     fig.savefig(f"{RESULTS_DIR}/results.png", dpi=150)
     plt.close(fig)
 
+    # Plot aggregate request outcomes as one stacked bar per algorithm.
+    fig_bar, ax_bar = plt.subplots(figsize=(max(8, 1.4 * len(algorithms) + 3), 5))
+    x = np.arange(len(algorithms))
+    bottom = np.zeros(len(algorithms))
+
+    for label, key, color in request_outcome_keys:
+        values = np.array([request_outcome_totals[algo][key] for algo in algorithms])
+        ax_bar.bar(x, values, bottom=bottom, label=label, color=color)
+        bottom += values
+
+    ax_bar.set_title("Request outcomes by algorithm")
+    ax_bar.set_xlabel("algorithm")
+    ax_bar.set_ylabel("number of active requests")
+    ax_bar.set_xticks(x)
+    ax_bar.set_xticklabels(algorithms, rotation=20, ha="right")
+    ax_bar.grid(axis="y", alpha=0.3)
+    ax_bar.legend()
+    fig_bar.tight_layout()
+    fig_bar.savefig(f"{RESULTS_DIR}/request_outcomes_stacked_bar.png", dpi=150)
+    plt.close(fig_bar)
+
+    request_outcomes = pd.DataFrame.from_dict(request_outcome_totals, orient="index")
+    request_outcomes.to_csv(f"{RESULTS_DIR}/request_outcomes_by_algorithm.csv")
+
     for algo in algorithms:
         all_history_per_demand[algo].to_csv(f"{RESULTS_DIR}/all_history_{algo}.csv")
 
     print(f"Simulation completed. Metric results were saved to {RESULTS_DIR}/results.png.")
+    print(f"Request outcome bar plot was saved to {RESULTS_DIR}/request_outcomes_stacked_bar.png.")
 
     # summary.json
     summary = {
@@ -151,7 +201,10 @@ if __name__ == "__main__":
         "llm_temperature": LLM_TEMPERATURE,
         "random_seed": random_seed,
         "num_steps": num_steps,
-        "delay_budget_ms": DELAY_BUDGET_MS,
+        "latency_requirement_range_ms": [
+            traffic_pattern_args["latency_requirement_min_ms"],
+            traffic_pattern_args["latency_requirement_max_ms"],
+        ],
         "algo_delays": algo_delays,
         "pdr_by_algorithm": aggregate_acceptance,
         "sla_violations_by_algorithm": aggregate_sla,

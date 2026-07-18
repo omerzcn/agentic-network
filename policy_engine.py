@@ -1,30 +1,33 @@
-# This script builds a routable graph and candidate paths per flow, shared by both
-# policy engines below. DeterministicPolicyEngine picks a path with fixed
-# rules and LLMPolicyEngine asks an LLM to pick instead.
+# This script builds a routable graph and candidate paths per flow, shared by the
+# routing policies (RoutingAgent in agents.py, DeterministicGlobalTE in
+# global_te_policy.py) built on top of BaseCandidatePolicy.
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import networkx as nx
 
-from simulation import ControllerAPI, FlowId, TopologySnapshot
+from simulation import ControllerAPI, FlowId, TopologySnapshot, TrafficModel
 
 from candidate_generator import CandidateGenerator
 
-from config import DELAY_BUDGET_MS
-from deterministic_selector import DeterministicPathSelector
-from path_tools import path_is_feasible
-
-from llm_client import LLMClient
-from llm_path_selector import LLMPathSelector
+from path_tools import path_is_feasible, path_latency_ms
 
 Node = str
 FlowKey = Tuple[Node, Node]
 Link = Tuple[Node, Node]
 
 class BaseCandidatePolicy:
-    def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 3):
+    def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 3, traffic: Optional[TrafficModel] = None):
         self.ctrl = ctrl
+        self.traffic = traffic
         self.candidate_generator = CandidateGenerator(candidates_per_flow=candidates_per_flow)
+
+    def _latency_budget(self, src: Node, dst: Node) -> float:
+        # Per-flow delay budget, replacing the old single DELAY_BUDGET_MS constant.
+        if self.traffic is None:
+            return float("inf")
+        budget = self.traffic.get_max_latency_ms(src, dst)
+        return budget if budget is not None else float("inf")
 
     @staticmethod
     def _build_graph(topology: TopologySnapshot) -> nx.Graph:
@@ -85,7 +88,7 @@ class BaseCandidatePolicy:
 
             src, dst = flow
             candidates = (
-                self.candidate_generator.generate(graph, src, dst)
+                self.candidate_generator.generate(graph, src, dst, weight_attr="latency_ms")
             )
             if candidates:
                 candidates_by_flow[flow] = candidates
@@ -115,65 +118,11 @@ class BaseCandidatePolicy:
 
             if entry is not None and entry.path:
                 still_valid = self.ctrl.validate_path_logic(src, dst, entry.path)
-                if still_valid and path_is_feasible(graph, entry.path, demand):
+                within_budget = path_latency_ms(graph, entry.path) <= self._latency_budget(src, dst) + 1e-9
+                if still_valid and within_budget and path_is_feasible(graph, entry.path, demand):
                     reused[flow] = list(entry.path)
                     continue
 
             remaining[flow] = demand
 
         return reused, remaining
-
-class DeterministicPolicyEngine(BaseCandidatePolicy):
-    def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 3):
-        super().__init__(ctrl, candidates_per_flow)
-        self.selector = DeterministicPathSelector()
-
-    def route_flows(self, demands: Dict[FlowKey, float]) -> Dict[FlowKey, List[Node]]:
-        topology = self.ctrl.get_topology_snapshot()
-        graph = self._build_graph(topology)
-
-        candidates_by_flow = (
-            self._generate_all_candidates(graph, demands)
-        )
-
-        selected_paths = {}
-
-        for flow, candidates in (candidates_by_flow.items()):
-            selected = self.selector.select(
-                graph=graph,
-                candidates=candidates,
-                demand_mbps=demands[flow],
-                delay_budget_ms=DELAY_BUDGET_MS,
-            )
-            if selected:
-                selected_paths[flow] = selected
-
-        return selected_paths
-
-class LLMPolicyEngine(BaseCandidatePolicy):
-    def __init__(self, ctrl: ControllerAPI, candidates_per_flow = 3):
-        super().__init__(ctrl, candidates_per_flow)
-        self.llm_client = LLMClient()
-        self.selector = LLMPathSelector(self.llm_client)
-    
-    def route_flows(self, demands: Dict[FlowKey, float]) -> Dict[FlowKey, List[Node]]:
-        topology = self.ctrl.get_topology_snapshot()
-        graph = self._build_graph(topology)
-
-        candidates_by_flow = (
-            self._generate_all_candidates(graph, demands)
-        )
-        selected = self.selector.select(
-                graph=graph,
-                candidates_by_flow=candidates_by_flow,
-                demands=demands,
-                delay_budget_ms=DELAY_BUDGET_MS,
-            )
-
-        # Debugging: how many eligible flows did the LLM actually route?
-        print(f"[LLMPolicyEngine] {len(selected)}/{len(candidates_by_flow)} flows routed by LLM")
-
-        return selected
-    
-    def get_stats(self) -> dict:
-        return self.llm_client.get_stats()

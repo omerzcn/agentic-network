@@ -21,13 +21,9 @@ class LinkId:
     v: Node
 
 
-@dataclass(frozen=True, slots=True)
-class DemandSpec:
-    base: float
-    start_time: int
-
-
-DemandMap = Dict[Tuple[Node, Node], DemandSpec]
+DemandSpec: TypeAlias = Dict[str, Any]
+DemandSpecMap: TypeAlias = Dict[Tuple[Node, Node], DemandSpec]
+DemandMap: TypeAlias = Dict[Tuple[Node, Node], float]
 
 
 @dataclass(frozen=True, slots=True)
@@ -291,14 +287,36 @@ class NetworkGraph:
 
 class TrafficModel:
     def __init__(self,
-                 demands: DemandMap,
+                 demands: DemandSpecMap,
                  seasonal_amplitude: float,
                  seasonal_frequency: float,
                  noise_power: float):
         self.base = demands
+        self.max_latency_ms_by_pair = {
+            pair: self._optional_float(spec.get("max_latency_ms"))
+            for pair, spec in demands.items()
+        }
         self.seasonal_amplitude = seasonal_amplitude
         self.seasonal_frequency = seasonal_frequency
         self.noise_power = noise_power
+
+    @staticmethod
+    def _optional_float(value: Any) -> float | None:
+        if value is None:
+            return None
+
+        try:
+            out = float(value)
+        except (TypeError, ValueError):
+            return None
+
+        if math.isnan(out):
+            return None
+
+        return out
+
+    def get_max_latency_ms(self, src: Node, dst: Node) -> float | None:
+        return self.max_latency_ms_by_pair.get((src, dst))
 
     def step(self, t: int) -> Dict[Tuple[Node, Node], float]:
         """
@@ -692,7 +710,8 @@ class Simulator:
         A demand is accepted if:
         - a path exists,
         - all links on the path are up,
-        - all links have enough remaining capacity.
+        - all links have enough remaining capacity,
+        - total path latency is no higher than the demand's latency requirement.
         """
 
         # Reset utilization
@@ -701,31 +720,47 @@ class Simulator:
 
         dropped = 0.0
         total = 0.0
+        latency_dropped = 0.0
+        active_request_count = 0
+        accepted_request_count = 0
+        delay_dropped_request_count = 0
+        no_valid_path_request_count = 0
+        other_dropped_request_count = 0
 
         accepted_demands = []
         dropped_demands = []
 
         for (src, dst), demand in demands.items():
             total += demand
+            is_active_request = demand > 1e-12
+            if is_active_request:
+                active_request_count += 1
+
             path = paths.get((src, dst), [])
+            max_latency_ms = self.traffic.get_max_latency_ms(src, dst)
 
             if not path:
                 dropped += demand
+                if is_active_request:
+                    no_valid_path_request_count += 1
                 dropped_demands.append({
                     "src": src,
                     "dst": dst,
                     "demand": demand,
+                    "max_latency_ms": max_latency_ms,
                     "reason": "no_path"
                 })
                 continue
 
             feasible = True
             reason = None
+            path_latency_ms = 0.0
 
-            # Check link capacities and availability
+            # Check link capacities, availability, and latency SLA.
             for i in range(len(path) - 1):
                 u, v = path[i], path[i + 1]
                 link = self.g.links[(u, v)]
+                path_latency_ms += float(link.get("latency", 0.0))
 
                 if not link["up"]:
                     feasible = False
@@ -737,13 +772,33 @@ class Simulator:
                     reason = "insufficient_capacity"
                     break
 
+            if (
+                    feasible
+                    and max_latency_ms is not None
+                    and path_latency_ms > max_latency_ms + 1e-9
+            ):
+                feasible = False
+                reason = "latency_requirement_not_met"
+
             if not feasible:
                 dropped += demand
+                if reason == "latency_requirement_not_met":
+                    latency_dropped += demand
+                    if is_active_request:
+                        delay_dropped_request_count += 1
+                elif reason == "link_down":
+                    if is_active_request:
+                        no_valid_path_request_count += 1
+                elif is_active_request:
+                    other_dropped_request_count += 1
+
                 dropped_demands.append({
                     "src": src,
                     "dst": dst,
                     "demand": demand,
                     "path": path,
+                    "path_latency_ms": path_latency_ms,
+                    "max_latency_ms": max_latency_ms,
                     "reason": reason
                 })
                 continue
@@ -757,8 +812,12 @@ class Simulator:
                 "src": src,
                 "dst": dst,
                 "demand": demand,
-                "path": path
+                "path": path,
+                "path_latency_ms": path_latency_ms,
+                "max_latency_ms": max_latency_ms,
             })
+            if is_active_request:
+                accepted_request_count += 1
 
         loss_rate = dropped / total if total > 0 else 0.0
         accepted = total - dropped
@@ -766,10 +825,16 @@ class Simulator:
 
         metrics = {
             "dropped": dropped,
+            "latency_dropped": latency_dropped,
             "accepted": accepted,
             "total": total,
             "loss_rate": loss_rate,
             "acceptance_rate": acceptance_rate,
+            "active_request_count": active_request_count,
+            "accepted_request_count": accepted_request_count,
+            "delay_dropped_request_count": delay_dropped_request_count,
+            "no_valid_path_request_count": no_valid_path_request_count,
+            "other_dropped_request_count": other_dropped_request_count,
             "accepted_demands": accepted_demands,
             "dropped_demands": dropped_demands
         }
@@ -862,6 +927,7 @@ class Simulator:
 
     def _run_heuristic(
             self,
+            algo: str,
             demands: Dict[Tuple[Node, Node], float],
             delay: float,
     ) -> Dict[Tuple[Node, Node], List[Node]]:
@@ -925,6 +991,7 @@ class Simulator:
             frozen_demands = dict(demands)
             self._heuristic_futures[algo] = self._heuristic_executors[algo].submit(
                 self._run_heuristic,
+                algo,
                 frozen_demands,
                 delay,
             )
@@ -971,9 +1038,9 @@ class Simulator:
         demands = self.traffic.step(self.t)
 
         # Step 3
-        if algo in algo_delays:  # ← changed
+        if algo in algo_delays:
             delay = algo_delays[algo]
-            suggested_paths = self._get_heuristic_paths_async(  # ← changed
+            suggested_paths = self._get_heuristic_paths_async(
                 algo, demands, delay
             )
 
@@ -991,7 +1058,7 @@ class Simulator:
         metrics = self.compute_metrics(demands, suggested_paths)
 
         # Bump time and controller
-        time.sleep(2.0)
+        time.sleep(0.25)
         self.t += 1
         self.ctrl.step()
 

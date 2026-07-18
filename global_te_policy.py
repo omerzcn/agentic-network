@@ -18,17 +18,16 @@
 
 from typing import Dict, List, Optional, Tuple
 
-from config import DELAY_BUDGET_MS
 from deterministic_selector import DeterministicPathSelector
 from policy_engine import BaseCandidatePolicy
-from simulation import ControllerAPI, FlowId
+from simulation import ControllerAPI, FlowId, TrafficModel
 
 Node = str
 FlowKey = Tuple[Node, Node]
 
 class DeterministicGlobalTE(BaseCandidatePolicy):
-    def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 8):
-        super().__init__(ctrl, candidates_per_flow)
+    def __init__(self, ctrl: ControllerAPI, candidates_per_flow: int = 8, traffic: Optional[TrafficModel] = None):
+        super().__init__(ctrl, candidates_per_flow, traffic)
         self.selector = DeterministicPathSelector()
 
     def route_flows(self, demands: Dict[FlowKey, float]) -> Dict[FlowKey, List[Node]]:
@@ -45,7 +44,7 @@ class DeterministicGlobalTE(BaseCandidatePolicy):
             if (
                 link in residual
                 and residual[link] >= demand
-                and self.ctrl.g.links[link]["latency"] <= DELAY_BUDGET_MS
+                and self.ctrl.g.links[link]["latency"] <= self._latency_budget(src, dst)
             ):
                 assigned[flow] = [src, dst]
                 residual[link] -= demand
@@ -61,13 +60,13 @@ class DeterministicGlobalTE(BaseCandidatePolicy):
             existing = self._existing_path(src, dst)
             if existing:
                 candidates.append(existing)
-            candidates += self.candidate_generator.generate(graph, src, dst)
+            candidates += self.candidate_generator.generate(graph, src, dst, weight_attr="latency_ms")
 
             selected = self.selector.select(
                 graph=graph,
                 candidates=candidates,
                 demand_mbps=demand,
-                delay_budget_ms=DELAY_BUDGET_MS,
+                delay_budget_ms=self._latency_budget(src, dst),
             )
             if selected:
                 assigned[flow] = selected

@@ -11,10 +11,10 @@ class CandidateGenerator:
         
         self.candidates_per_flow = candidates_per_flow
 
-    def generate(self, graph: nx.Graph, src: Node, dst: Node) -> List[List[Node]]:
+    def generate(self, graph: nx.Graph, src: Node, dst: Node, weight_attr: str = "weight") -> List[List[Node]]:
         if src not in graph or dst not in graph:
             return []
-        
+
         candidates: List[List[Node]] = []
 
         try:
@@ -22,7 +22,7 @@ class CandidateGenerator:
                 graph,
                 src,
                 dst,
-                weight="weight",
+                weight=weight_attr,
             )
             for path in path_iterator:
                 candidates.append(list(path))

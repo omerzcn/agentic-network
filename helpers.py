@@ -1,9 +1,10 @@
 import random
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Any
 
 Node = str
 Link = Tuple[Node, Node]
 DemandMap = Dict[Tuple[Node, Node], float]
+DemandSpecMap = Dict[Tuple[Node, Node], Dict[str, Any]]
 
 
 def create_random_network(g, seed,
@@ -41,8 +42,10 @@ def create_random_traffic_pattern(
         base_demand: float,
         seed: int = 42,
         start_t_min: int = 0,
-        start_t_max: int = 100
-) -> DemandMap:
+        start_t_max: int = 100,
+        latency_requirement_min_ms: float = 5.0,
+        latency_requirement_max_ms: float = 20.0,
+) -> DemandSpecMap:
     """
     Creates traffic for each ordered node pair.
     Each pair gets:
@@ -52,7 +55,7 @@ def create_random_traffic_pattern(
     random.seed(seed)
 
     nodes = sorted(list(g.nodes))
-    demands: DemandMap = {}
+    demands: DemandSpecMap = {}
 
     for i in range(len(nodes)):
         for j in range(i + 1, len(nodes)):
@@ -61,14 +64,23 @@ def create_random_traffic_pattern(
 
             # one start time for both directions (or generate separately if you prefer)
             start_time = random.randint(start_t_min, start_t_max)
+            if latency_requirement_max_ms > latency_requirement_min_ms:
+                max_latency_ms = random.uniform(
+                    latency_requirement_min_ms,
+                    latency_requirement_max_ms,
+                )
+            else:
+                max_latency_ms = latency_requirement_min_ms
 
             demands[(nodes[i], nodes[j])] = {
                 "base": base_val,
-                "start_time": start_time
+                "start_time": start_time,
+                "max_latency_ms": max_latency_ms,
             }
             demands[(nodes[j], nodes[i])] = {
                 "base": base_val,
-                "start_time": start_time
+                "start_time": start_time,
+                "max_latency_ms": max_latency_ms,
             }
 
     return demands

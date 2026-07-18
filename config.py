@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-num_steps = 100
+num_steps = 120
 algorithms = ["heuristic_no_delay", "heuristic_low_delay", "heuristic_high_delay", "agentic"]
 
 # For quick debugging runs: ALGORITHMS=agentic python3 main.py
@@ -33,9 +33,7 @@ algo_delays = {
 
 metric_names = ["total", "acceptance_rate"]
 
-DELAY_BUDGET_MS = 15
-
-random_seed = 42
+random_seed = 50
 
 load_dotenv()
 
@@ -50,7 +48,7 @@ OLLAMA_KEEP_ALIVE = os.getenv("OLLAMA_KEEP_ALIVE", "30m")
 
 LLM_TEMPERATURE = 0
 
-# Llama struggle with long prompts, so keeping the candidate list smaller 
+# llama struggle with long prompts, so keeping the candidate list smaller
 CANDIDATES_PER_FLOW = int(os.getenv("CANDIDATES_PER_FLOW", "4" if LLM_BACKEND == "ollama" else "8"))
 
 # Which policy plugs into the "agentic" slot: "llm" or "global_te" (DeterministicGlobalTE, no LLM involved).
@@ -62,19 +60,24 @@ RESULTS_DIR = os.path.join("results", RESULTS_LABEL)
 verbosity_level = 1  # 0: no print, 1: few prints (important messages), 2: more prints (detailed)
 
 network_args = {
-    "num_nodes": 10,
-    "link_prob": 1.0,
-    "capacity_min": 10,
-    "capacity_max": 20,
+    "num_nodes": 15,
+    "link_prob": 0.5,
+    "capacity_min": 20,
+    "capacity_max": 80,
     "latency_min": 1,
     "latency_max": 10,
     "loss_min": 0.0,
-    "loss_max": 0.1,
-    "fail_p_min": 0.0,
-    "fail_p_max": 0.1,
+    "loss_max": 0.02,
+    "fail_p_min": 0.001,
+    "fail_p_max": 0.01,
 }
 
-base_demand = 10.0
+base_demand = 8.0
+
+traffic_pattern_args = {
+    "latency_requirement_min_ms": 4.0,
+    "latency_requirement_max_ms": 8.0,
+}
 
 traffic_args = {
     "seasonal_amplitude": 0.0,

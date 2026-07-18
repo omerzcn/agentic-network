@@ -13,6 +13,7 @@ Link = Tuple[Node, Node]
 
 class RoutingState(TypedDict, total=False):
     demands: Dict[FlowKey, float]
+    latency_budgets: Dict[FlowKey, float]
     graph: nx.Graph
     residual: Dict[Link, float]
     reused_paths: Dict[FlowKey, List[Node]]

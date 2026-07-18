@@ -21,7 +21,7 @@ class LLMPathSelector:
             graph: nx.Graph,
             candidates_by_flow: Dict[FlowKey, List[List[Node]]],
             demands: Dict[FlowKey, float],
-            delay_budget_ms: float,
+            delay_budget_ms: Dict[FlowKey, float],
     ) -> Dict[FlowKey, List[Node]]:
         if not candidates_by_flow:      # Shortcut: If there is nothing to ask, no API call
             return {}
@@ -88,7 +88,7 @@ class LLMPathSelector:
         graph: nx.Graph,
         candidates_by_flow: Dict[FlowKey, List[List[Node]]],
         demands: Dict[FlowKey, float],
-        delay_budget_ms: float,
+        delay_budget_ms: Dict[FlowKey, float],
     ) -> str:
         lines = [
             (
@@ -102,8 +102,9 @@ class LLMPathSelector:
                 "other flows' current usage, not the link's total capacity."
             ),
             (
-                "Prefer a path that can carry the demand and "
-                "stays within the delay budget."
+                "Each flow below has its own delay budget, they are not "
+                "all the same. Prefer a path that can carry the demand and "
+                "stays within that flow's own delay budget shown below."
             ),
             (
                 "If multiple paths satisfy both conditions, "
@@ -117,15 +118,12 @@ class LLMPathSelector:
                 "Do not return explanations, markdown, "
                 "or paths."
             ),
-            (
-                "Delay budget: "
-                + str(delay_budget_ms)
-                + " ms"
-            ),
         ]
         for flow, candidates in (candidates_by_flow.items()):
             src, dst = flow
             demand = demands[flow]
+            budget = delay_budget_ms.get(flow, float("inf"))
+            budget_str = "no limit" if budget == float("inf") else f"{round(budget, 2)} ms"
 
             lines.append("")
             lines.append(
@@ -135,7 +133,8 @@ class LLMPathSelector:
                 + dst
                 + ", demand="
                 + str(round(demand, 2))
-                + " Mbps"
+                + " Mbps, delay budget="
+                + budget_str
             )
 
             for index, path in enumerate(candidates):

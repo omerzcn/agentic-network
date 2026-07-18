@@ -5,10 +5,10 @@ import subprocess
 import sys
 
 RUNS = [
-    #{"backend": "openrouter", "model": "openai/gpt-4o-mini", "label": "gpt4o_mini"},
+    {"backend": "openrouter", "model": "openai/gpt-4o-mini", "label": "gpt4o_mini"},
     #{"backend": "openrouter", "model": "anthropic/claude-haiku-4.5", "label": "claude-haiku-4.5"},
     #{"backend": "openrouter", "model": "deepseek/deepseek-v4-pro", "label": "deepseek"},
-    {"backend": "openrouter", "model": "google/gemini-3.1-flash-lite", "label": "gemini"},
+    #{"backend": "openrouter", "model": "google/gemini-3.1-flash-lite", "label": "gemini"},
     #{"backend": "ollama", "model": "llama3.2", "label": "llama3_2_local"},
 ]
 
