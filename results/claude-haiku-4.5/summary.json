@@ -1,0 +1,61 @@
+{
+  "llm_backend": "openrouter",
+  "llm_model": "anthropic/claude-haiku-4.5",
+  "llm_temperature": 0,
+  "random_seed": 50,
+  "num_steps": 120,
+  "latency_requirement_range_ms": [
+    4.0,
+    8.0
+  ],
+  "algo_delays": {
+    "heuristic_no_delay": 0.0,
+    "heuristic_low_delay": 0.5,
+    "heuristic_high_delay": 10.0
+  },
+  "pdr_by_algorithm": {
+    "heuristic_no_delay": 0.26767099666326444,
+    "heuristic_low_delay": 0.2939402530657359,
+    "heuristic_high_delay": 0.23455680308852458,
+    "agentic": 0.3765014287540528
+  },
+  "sla_violations_by_algorithm": {
+    "heuristic_no_delay": {
+      "active_request_count": 12784,
+      "accepted_request_count": 3758,
+      "delay_dropped_request_count": 8977,
+      "no_valid_path_request_count": 45,
+      "other_dropped_request_count": 4,
+      "delay_dropped_mbps": 77437.20003383624
+    },
+    "heuristic_low_delay": {
+      "active_request_count": 12784,
+      "accepted_request_count": 4106,
+      "delay_dropped_request_count": 8609,
+      "no_valid_path_request_count": 61,
+      "other_dropped_request_count": 8,
+      "delay_dropped_mbps": 74493.1206611356
+    },
+    "heuristic_high_delay": {
+      "active_request_count": 12784,
+      "accepted_request_count": 3292,
+      "delay_dropped_request_count": 7809,
+      "no_valid_path_request_count": 1679,
+      "other_dropped_request_count": 4,
+      "delay_dropped_mbps": 67596.45338710332
+    },
+    "agentic": {
+      "active_request_count": 12784,
+      "accepted_request_count": 5156,
+      "delay_dropped_request_count": 7539,
+      "no_valid_path_request_count": 85,
+      "other_dropped_request_count": 4,
+      "delay_dropped_mbps": 65610.46337267682
+    }
+  },
+  "llm_agent_stats": {
+    "llm_calls": 9,
+    "total_tokens": 106178,
+    "average_call_latency_s": 3.1049545622222974
+  }
+}

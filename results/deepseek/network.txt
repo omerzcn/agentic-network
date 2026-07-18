@@ -3,278 +3,308 @@ Network Data
 
 Nodes:
 ------
-E 	B 	F 	I 	H 	A 	G 	C 	J 	D 	
+I 	K 	H 	L 	N 	C 	D 	G 	M 	J 	F 	A 	E 	O 	B 	
 ------
 
 Links:
 ------
 A -- B
-  capacity: 10.25
-  latency: 3.48
-  loss: 0.02
-  fail_p: 0.07
-
-A -- C
-  capacity: 18.92
-  latency: 1.78
-  loss: 0.04
-  fail_p: 0.0
+  capacity: 35.97
+  latency: 6.74
+  loss: 0.0
+  fail_p: 0.01
 
 A -- D
-  capacity: 15.05
-  latency: 1.24
-  loss: 0.02
-  fail_p: 0.06
-
-A -- E
-  capacity: 12.2
-  latency: 6.3
-  loss: 0.08
+  capacity: 39.04
+  latency: 7.09
+  loss: 0.0
   fail_p: 0.0
 
-A -- F
-  capacity: 16.98
-  latency: 4.06
-  loss: 0.02
-  fail_p: 0.1
-
 A -- G
-  capacity: 10.93
-  latency: 1.87
-  loss: 0.08
-  fail_p: 0.06
-
-A -- H
-  capacity: 17.3
-  latency: 5.83
-  loss: 0.1
-  fail_p: 0.04
-
-A -- I
-  capacity: 18.29
-  latency: 6.57
-  loss: 0.09
-  fail_p: 0.06
-
-A -- J
-  capacity: 10.46
-  latency: 3.05
-  loss: 0.03
+  capacity: 31.34
+  latency: 9.75
+  loss: 0.01
   fail_p: 0.01
 
 B -- C
-  capacity: 11.01
-  latency: 3.5
-  loss: 0.06
-  fail_p: 0.04
+  capacity: 33.63
+  latency: 3.4
+  loss: 0.02
+  fail_p: 0.01
 
 B -- D
-  capacity: 12.1
-  latency: 3.4
-  loss: 0.09
-  fail_p: 0.06
+  capacity: 74.65
+  latency: 3.44
+  loss: 0.01
+  fail_p: 0.01
 
 B -- E
-  capacity: 11.71
-  latency: 7.56
+  capacity: 32.56
+  latency: 6.21
+  loss: 0.01
+  fail_p: 0.01
+
+B -- K
+  capacity: 73.25
+  latency: 8.33
   loss: 0.02
-  fail_p: 0.04
+  fail_p: 0.0
 
-B -- F
-  capacity: 16.4
-  latency: 6.01
-  loss: 0.07
-  fail_p: 0.08
-
-B -- G
-  capacity: 12.29
-  latency: 1.29
-  loss: 0.03
-  fail_p: 0.03
-
-B -- H
-  capacity: 19.43
-  latency: 8.89
-  loss: 0.03
-  fail_p: 0.07
-
-B -- I
-  capacity: 19.15
-  latency: 5.13
-  loss: 0.03
-  fail_p: 0.02
-
-B -- J
-  capacity: 12.63
-  latency: 6.26
-  loss: 0.09
-  fail_p: 0.04
+B -- N
+  capacity: 42.06
+  latency: 5.65
+  loss: 0.0
+  fail_p: 0.0
 
 C -- D
-  capacity: 19.98
-  latency: 5.59
+  capacity: 78.7
+  latency: 8.65
+  loss: 0.02
+  fail_p: 0.01
+
+C -- E
+  capacity: 63.55
+  latency: 1.88
+  loss: 0.0
+  fail_p: 0.0
+
+C -- F
+  capacity: 22.01
+  latency: 5.66
+  loss: 0.02
+  fail_p: 0.0
+
+C -- G
+  capacity: 75.58
+  latency: 5.76
   loss: 0.01
   fail_p: 0.0
 
-C -- E
-  capacity: 16.27
-  latency: 8.13
-  loss: 0.04
-  fail_p: 0.01
-
-C -- F
-  capacity: 19.96
-  latency: 5.76
-  loss: 0.1
-  fail_p: 0.09
-
-C -- G
-  capacity: 17.21
-  latency: 7.14
-  loss: 0.05
-  fail_p: 0.03
-
-C -- H
-  capacity: 11.12
-  latency: 4.91
-  loss: 0.05
-  fail_p: 0.1
-
 C -- I
-  capacity: 12.63
-  latency: 5.51
+  capacity: 44.19
+  latency: 4.26
   loss: 0.02
-  fail_p: 0.09
+  fail_p: 0.0
 
 C -- J
-  capacity: 12.98
-  latency: 6.75
-  loss: 0.06
-  fail_p: 0.02
+  capacity: 58.37
+  latency: 1.08
+  loss: 0.01
+  fail_p: 0.0
 
-D -- E
-  capacity: 15.39
-  latency: 8.01
-  loss: 0.05
+C -- M
+  capacity: 38.09
+  latency: 4.87
+  loss: 0.02
+  fail_p: 0.0
+
+C -- N
+  capacity: 29.58
+  latency: 1.45
+  loss: 0.0
   fail_p: 0.0
 
 D -- F
-  capacity: 10.19
-  latency: 9.36
-  loss: 0.09
-  fail_p: 0.08
-
-D -- G
-  capacity: 10.58
-  latency: 8.9
-  loss: 0.09
+  capacity: 50.01
+  latency: 3.17
+  loss: 0.02
   fail_p: 0.01
 
 D -- H
-  capacity: 10.69
-  latency: 7.85
-  loss: 0.08
-  fail_p: 0.01
+  capacity: 49.64
+  latency: 4.89
+  loss: 0.01
+  fail_p: 0.0
 
 D -- I
-  capacity: 15.5
-  latency: 3.39
-  loss: 0.09
-  fail_p: 0.04
+  capacity: 56.3
+  latency: 8.44
+  loss: 0.01
+  fail_p: 0.0
 
 D -- J
-  capacity: 15.39
-  latency: 7.57
-  loss: 0.02
-  fail_p: 0.03
+  capacity: 51.99
+  latency: 8.34
+  loss: 0.01
+  fail_p: 0.0
 
-E -- F
-  capacity: 16.5
-  latency: 4.94
-  loss: 0.05
+D -- K
+  capacity: 71.0
+  latency: 7.4
+  loss: 0.01
+  fail_p: 0.01
+
+D -- L
+  capacity: 53.58
+  latency: 1.25
+  loss: 0.01
+  fail_p: 0.01
+
+D -- M
+  capacity: 37.68
+  latency: 6.98
+  loss: 0.0
   fail_p: 0.01
 
 E -- G
-  capacity: 13.38
-  latency: 6.29
-  loss: 0.02
-  fail_p: 0.02
+  capacity: 78.6
+  latency: 1.44
+  loss: 0.01
+  fail_p: 0.0
 
 E -- H
-  capacity: 16.31
-  latency: 3.06
-  loss: 0.09
-  fail_p: 0.09
+  capacity: 36.59
+  latency: 4.42
+  loss: 0.0
+  fail_p: 0.0
 
-E -- I
-  capacity: 12.38
-  latency: 7.02
-  loss: 0.02
+E -- M
+  capacity: 65.46
+  latency: 9.04
+  loss: 0.01
   fail_p: 0.01
 
-E -- J
-  capacity: 15.71
-  latency: 5.25
-  loss: 0.08
-  fail_p: 0.08
+E -- N
+  capacity: 76.22
+  latency: 4.01
+  loss: 0.0
+  fail_p: 0.0
 
 F -- G
-  capacity: 10.97
-  latency: 4.88
-  loss: 0.04
-  fail_p: 0.05
-
-F -- H
-  capacity: 16.73
-  latency: 9.86
-  loss: 0.01
-  fail_p: 0.04
+  capacity: 60.46
+  latency: 6.71
+  loss: 0.02
+  fail_p: 0.01
 
 F -- I
-  capacity: 18.62
-  latency: 3.24
-  loss: 0.02
-  fail_p: 0.04
+  capacity: 22.3
+  latency: 1.27
+  loss: 0.0
+  fail_p: 0.0
 
 F -- J
-  capacity: 12.79
-  latency: 3.25
-  loss: 0.09
-  fail_p: 0.04
+  capacity: 62.24
+  latency: 4.96
+  loss: 0.01
+  fail_p: 0.01
 
-G -- H
-  capacity: 15.5
-  latency: 1.46
-  loss: 0.1
-  fail_p: 0.08
+F -- K
+  capacity: 41.66
+  latency: 4.49
+  loss: 0.0
+  fail_p: 0.01
 
-G -- I
-  capacity: 19.26
-  latency: 8.64
-  loss: 0.02
-  fail_p: 0.05
+F -- M
+  capacity: 57.44
+  latency: 1.22
+  loss: 0.01
+  fail_p: 0.01
 
-G -- J
-  capacity: 14.01
-  latency: 1.53
-  loss: 0.04
-  fail_p: 0.1
+F -- N
+  capacity: 27.05
+  latency: 5.33
+  loss: 0.0
+  fail_p: 0.01
+
+G -- K
+  capacity: 78.75
+  latency: 6.98
+  loss: 0.01
+  fail_p: 0.01
+
+G -- M
+  capacity: 60.09
+  latency: 4.48
+  loss: 0.01
+  fail_p: 0.01
 
 H -- I
-  capacity: 17.84
-  latency: 5.1
-  loss: 0.04
-  fail_p: 0.1
+  capacity: 33.05
+  latency: 4.46
+  loss: 0.01
+  fail_p: 0.0
 
 H -- J
-  capacity: 15.56
-  latency: 7.47
-  loss: 0.02
-  fail_p: 0.03
+  capacity: 38.44
+  latency: 5.27
+  loss: 0.0
+  fail_p: 0.0
 
-I -- J
-  capacity: 15.79
-  latency: 5.88
-  loss: 0.07
+H -- N
+  capacity: 73.42
+  latency: 4.87
+  loss: 0.01
+  fail_p: 0.0
+
+H -- O
+  capacity: 57.81
+  latency: 7.87
+  loss: 0.01
   fail_p: 0.01
+
+I -- K
+  capacity: 34.73
+  latency: 9.95
+  loss: 0.01
+  fail_p: 0.0
+
+I -- M
+  capacity: 25.83
+  latency: 9.41
+  loss: 0.01
+  fail_p: 0.01
+
+I -- N
+  capacity: 73.67
+  latency: 6.41
+  loss: 0.01
+  fail_p: 0.0
+
+J -- M
+  capacity: 45.72
+  latency: 7.22
+  loss: 0.02
+  fail_p: 0.01
+
+J -- N
+  capacity: 74.57
+  latency: 7.8
+  loss: 0.01
+  fail_p: 0.0
+
+K -- N
+  capacity: 60.46
+  latency: 1.89
+  loss: 0.01
+  fail_p: 0.01
+
+L -- N
+  capacity: 58.52
+  latency: 5.32
+  loss: 0.01
+  fail_p: 0.01
+
+L -- O
+  capacity: 31.96
+  latency: 9.08
+  loss: 0.01
+  fail_p: 0.0
+
+M -- N
+  capacity: 24.22
+  latency: 4.32
+  loss: 0.01
+  fail_p: 0.0
+
+M -- O
+  capacity: 46.29
+  latency: 9.86
+  loss: 0.01
+  fail_p: 0.01
+
+N -- O
+  capacity: 68.94
+  latency: 2.15
+  loss: 0.01
+  fail_p: 0.0
 
