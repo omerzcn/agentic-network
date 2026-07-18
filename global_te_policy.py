@@ -90,4 +90,8 @@ class DeterministicGlobalTE(BaseCandidatePolicy):
     def get_stats(self) -> dict:
         # No LLM calls happen in this policy. That's why, for interface compatibility with
         # RoutingAgent, these are saved to summary.json so that code works unchanged.
-        return {"llm_calls": 0, "total_tokens": 0, "average_call_latency_s": 0.0}
+        return {
+            "llm_calls": 0, "total_tokens": 0, "average_call_latency_s": 0.0,
+            "total_flows_requested": 0, "total_flows_decided": 0,
+            "total_kept_llm_pick": 0, "total_reconciled": 0,
+        }

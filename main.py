@@ -42,6 +42,21 @@ if __name__ == "__main__":
     g.draw_to_file(f"{RESULTS_DIR}/network.png", random_seed)
     g.save_to_text_file(f"{RESULTS_DIR}/network.txt")
 
+    # Structured data for the dashboard 
+    written_undirected = set()
+    network_link_rows = []
+    for (u, v), attrs in g.links.items():
+        key = tuple(sorted((u, v)))
+        if key in written_undirected:
+            continue
+        written_undirected.add(key)
+        network_link_rows.append({
+            "u": key[0], "v": key[1],
+            "capacity": attrs["capacity"], "latency": attrs["latency"],
+            "loss": attrs["loss"], "fail_p": attrs["fail_p"],
+        })
+    pd.DataFrame(network_link_rows).to_csv(f"{RESULTS_DIR}/network_links.csv", index=False)
+
     # Create traffic model
     base_demands = create_random_traffic_pattern(
         g,
@@ -78,6 +93,11 @@ if __name__ == "__main__":
         for algo in algorithms
     }
 
+    # Per-step logs for the dashboard
+    link_util_rows = []
+    drop_event_rows = []
+    step_metrics_rows = []
+
     with Simulator(g, traffic, ctrl, llm_agent, verbosity=verbosity_level) as simulator:
         for algo in algorithms:
 
@@ -101,8 +121,27 @@ if __name__ == "__main__":
             sla_totals = Counter()
             total_accepted_mbps = 0.0
             total_offered_mbps = 0.0
+            
+            # Collecting violation steps for dashboard
+            bandwidth_violation_steps = set()
+            delay_violation_steps = set()
             for t in tqdm(range(num_steps)):
                 _, metrics = simulator.step(algo)
+
+                for (u, v), attrs in g.links.items():
+                    link_util_rows.append({
+                        "algo": algo, "step": t, "u": u, "v": v,
+                        "capacity": attrs["capacity"], "utilization": attrs["util"],
+                        "up": attrs["up"],
+                    })
+                step_metrics_rows.append({
+                    "algo": algo, "step": t,
+                    "total": metrics["total"], "accepted": metrics["accepted"],
+                    "dropped": metrics["dropped"],
+                    "acceptance_rate": metrics["acceptance_rate"],
+                    "loss_rate": metrics["loss_rate"],
+                })
+
                 for k in metric_names:
                     history[k].append(metrics.get(k, 0.0))
                 for item in metrics["accepted_demands"]:
@@ -110,6 +149,18 @@ if __name__ == "__main__":
                 for item in metrics["dropped_demands"]:
                     drop_reason_counts[item["reason"]] += 1
                     drop_reason_mbps[item["reason"]] += item["demand"]
+                    drop_event_rows.append({
+                        "algo": algo, "step": t,
+                        "src": item["src"], "dst": item["dst"], "demand": item["demand"],
+                        "reason": item["reason"],
+                        "path": ";".join(item["path"]) if item.get("path") else "",
+                        "path_latency_ms": item.get("path_latency_ms"),
+                        "max_latency_ms": item.get("max_latency_ms"),
+                    })
+                    if item["reason"] == "insufficient_capacity":
+                        bandwidth_violation_steps.add(t)
+                    elif item["reason"] == "latency_requirement_not_met":
+                        delay_violation_steps.add(t)
                 for _, key, _ in request_outcome_keys:
                     request_outcome_totals[algo][key] += metrics.get(key, 0)
 
@@ -130,6 +181,9 @@ if __name__ == "__main__":
 
             all_history[algo] = history
             all_history_per_demand[algo] = history_per_demand
+
+            sla_totals["bandwidth_violation_duration_steps"] = len(bandwidth_violation_steps)
+            sla_totals["delay_violation_duration_steps"] = len(delay_violation_steps)
 
             acceptance_ratio = total_accepted_mbps / total_offered_mbps if total_offered_mbps > 0 else 0.0
             aggregate_acceptance[algo] = acceptance_ratio
@@ -190,6 +244,10 @@ if __name__ == "__main__":
 
     for algo in algorithms:
         all_history_per_demand[algo].to_csv(f"{RESULTS_DIR}/all_history_{algo}.csv")
+
+    pd.DataFrame(link_util_rows).to_csv(f"{RESULTS_DIR}/link_utilization.csv", index=False)
+    pd.DataFrame(drop_event_rows).to_csv(f"{RESULTS_DIR}/drop_events.csv", index=False)
+    pd.DataFrame(step_metrics_rows).to_csv(f"{RESULTS_DIR}/step_metrics.csv", index=False)
 
     print(f"Simulation completed. Metric results were saved to {RESULTS_DIR}/results.png.")
     print(f"Request outcome bar plot was saved to {RESULTS_DIR}/request_outcomes_stacked_bar.png.")

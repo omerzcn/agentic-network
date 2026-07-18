@@ -43,6 +43,10 @@ class RoutingAgent(BaseCandidatePolicy):
         self.deterministic_selector = DeterministicPathSelector()
         self.graph = self._build_workflow()
 
+        # LLM-driven or deterministic fallback
+        self.total_kept_llm_pick = 0
+        self.total_reconciled = 0
+
     def _build_workflow(self):
         builder = StateGraph(RoutingState)
 
@@ -241,9 +245,17 @@ class RoutingAgent(BaseCandidatePolicy):
         print(f"[RoutingAgent] reconcile: {len(validated)}/{len(candidates_by_flow)} flows routed "
               f"({kept_llm_pick} kept the LLM's own pick)")
 
+        self.total_kept_llm_pick += kept_llm_pick
+        self.total_reconciled += len(candidates_by_flow)
+
         return {
             "validated_paths": validated,
         }
 
     def get_stats(self):
-        return self.llm_client.get_stats()
+        return {
+            **self.llm_client.get_stats(),
+            **self.llm_selector.get_stats(),
+            "total_kept_llm_pick": self.total_kept_llm_pick,
+            "total_reconciled": self.total_reconciled,
+        }

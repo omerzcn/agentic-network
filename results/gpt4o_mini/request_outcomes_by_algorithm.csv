@@ -1,5 +1,5 @@
 ,accepted_request_count,delay_dropped_request_count,no_valid_path_request_count,other_dropped_request_count
-heuristic_no_delay,3720,9000,64,0
-heuristic_low_delay,3810,8896,78,0
-heuristic_high_delay,3264,7826,1694,0
-agentic,5000,7732,48,4
+heuristic_no_delay,3808,8885,91,0
+heuristic_low_delay,3804,8873,107,0
+heuristic_high_delay,3338,7727,1719,0
+agentic,4936,7680,72,96

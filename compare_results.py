@@ -9,16 +9,11 @@ import pandas as pd
 
 ALGO_COLUMNS = ["heuristic_no_delay", "heuristic_low_delay", "heuristic_high_delay", "agentic"]
 
-EXCLUDED_LABELS = {"global_te", "deepseek"}
-EXCLUDED_SUFFIXES = ("_debug",)
-
 def load_summaries(results_dir: str = "results") -> pd.DataFrame:
     rows = []
 
     for summary_path in sorted(glob.glob(os.path.join(results_dir, "*", "summary.json"))):
         label = os.path.basename(os.path.dirname(summary_path))
-        if label in EXCLUDED_LABELS or label.endswith(EXCLUDED_SUFFIXES):
-            continue
 
         with open(summary_path) as f:
             data = json.load(f)
@@ -31,7 +26,12 @@ def load_summaries(results_dir: str = "results") -> pd.DataFrame:
         }
         for algo in ALGO_COLUMNS:
             row[algo] = pdr.get(algo)
-        row["llm_calls"] = stats.get("llm_calls")
+
+        # Flow decisions is the real work-done number
+        row["flow_decisions"] = stats.get("total_flows_decided")
+        total_reconciled = stats.get("total_reconciled")
+        kept = stats.get("total_kept_llm_pick")
+        row["kept_llm_pick_ratio"] = (kept / total_reconciled) if total_reconciled else None
         row["avg_call_latency_s"] = stats.get("average_call_latency_s")
 
         rows.append(row)
@@ -45,14 +45,15 @@ def render_table_image(df: pd.DataFrame, out_path: str) -> None:
         "heuristic_low_delay": "Heuristic\n(low delay)",
         "heuristic_high_delay": "Heuristic\n(high delay)",
         "agentic": "Agentic\n(LLM)",
-        "llm_calls": "LLM\ncalls",
+        "flow_decisions": "Flow\ndecisions",
+        "kept_llm_pick_ratio": "Kept LLM\npick %",
         "avg_call_latency_s": "Avg latency\n(s)",
     })
 
-    for col in ["Heuristic\n(no delay)", "Heuristic\n(low delay)", "Heuristic\n(high delay)", "Agentic\n(LLM)"]:
+    for col in ["Heuristic\n(no delay)", "Heuristic\n(low delay)", "Heuristic\n(high delay)", "Agentic\n(LLM)", "Kept LLM\npick %"]:
         display_df[col] = display_df[col].map(lambda v: f"{v:.2%}" if pd.notnull(v) else "-")
     display_df["Avg latency\n(s)"] = display_df["Avg latency\n(s)"].map(lambda v: f"{v:.2f}" if pd.notnull(v) else "-")
-    display_df["LLM\ncalls"] = display_df["LLM\ncalls"].map(lambda v: f"{int(v)}" if pd.notnull(v) else "-")
+    display_df["Flow\ndecisions"] = display_df["Flow\ndecisions"].map(lambda v: f"{int(v)}" if pd.notnull(v) else "-")
 
     n_rows, n_cols = display_df.shape
     fig, ax = plt.subplots(figsize=(1.6 * n_cols, 0.6 * (n_rows + 1)))

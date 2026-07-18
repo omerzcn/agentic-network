@@ -14,48 +14,60 @@
     "heuristic_high_delay": 10.0
   },
   "pdr_by_algorithm": {
-    "heuristic_no_delay": 0.23953440217501276,
-    "heuristic_low_delay": 0.23935999349857592,
-    "heuristic_high_delay": 0.20796010176782614,
-    "agentic": 0.3769240617295302
+    "heuristic_no_delay": 0.2919114553449977,
+    "heuristic_low_delay": 0.31151866461426164,
+    "heuristic_high_delay": 0.24987305896394382,
+    "agentic": 0.3827054093209211
   },
   "sla_violations_by_algorithm": {
     "heuristic_no_delay": {
       "active_request_count": 12784,
-      "accepted_request_count": 3434,
-      "delay_dropped_request_count": 9279,
-      "no_valid_path_request_count": 71,
+      "accepted_request_count": 4028,
+      "delay_dropped_request_count": 8680,
+      "no_valid_path_request_count": 76,
       "other_dropped_request_count": 0,
-      "delay_dropped_mbps": 80244.65241271083
+      "delay_dropped_mbps": 74650.68793576684,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 119
     },
     "heuristic_low_delay": {
       "active_request_count": 12784,
-      "accepted_request_count": 3432,
-      "delay_dropped_request_count": 9275,
-      "no_valid_path_request_count": 77,
+      "accepted_request_count": 4294,
+      "delay_dropped_request_count": 8398,
+      "no_valid_path_request_count": 92,
       "other_dropped_request_count": 0,
-      "delay_dropped_mbps": 80215.21960624417
+      "delay_dropped_mbps": 72435.574176703,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 117
     },
     "heuristic_high_delay": {
       "active_request_count": 12784,
-      "accepted_request_count": 2994,
-      "delay_dropped_request_count": 8083,
-      "no_valid_path_request_count": 1707,
+      "accepted_request_count": 3464,
+      "delay_dropped_request_count": 7608,
+      "no_valid_path_request_count": 1712,
       "other_dropped_request_count": 0,
-      "delay_dropped_mbps": 70231.35730025344
+      "delay_dropped_mbps": 65750.10144992411,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 80
     },
     "agentic": {
       "active_request_count": 12784,
-      "accepted_request_count": 5232,
-      "delay_dropped_request_count": 7446,
-      "no_valid_path_request_count": 60,
-      "other_dropped_request_count": 46,
-      "delay_dropped_mbps": 65395.14520249344
+      "accepted_request_count": 5264,
+      "delay_dropped_request_count": 7378,
+      "no_valid_path_request_count": 94,
+      "other_dropped_request_count": 48,
+      "delay_dropped_mbps": 64468.6916670401,
+      "bandwidth_violation_duration_steps": 24,
+      "delay_violation_duration_steps": 120
     }
   },
   "llm_agent_stats": {
-    "llm_calls": 16,
-    "total_tokens": 197307,
-    "average_call_latency_s": 1.6719175556247592
+    "llm_calls": 15,
+    "total_tokens": 187707,
+    "average_call_latency_s": 1.8123271647991108,
+    "total_flows_requested": 726,
+    "total_flows_decided": 726,
+    "total_kept_llm_pick": 18,
+    "total_reconciled": 726
   }
 }

@@ -15,7 +15,10 @@ FlowKey = Tuple[Node, Node]
 class LLMPathSelector:
     def __init__(self, client: LLMClient):
         self.client = client
-    
+        # Call counts for each flow 
+        self.total_flows_requested = 0
+        self.total_flows_decided = 0
+
     def select(
             self,
             graph: nx.Graph,
@@ -25,6 +28,8 @@ class LLMPathSelector:
     ) -> Dict[FlowKey, List[Node]]:
         if not candidates_by_flow:      # Shortcut: If there is nothing to ask, no API call
             return {}
+
+        self.total_flows_requested += len(candidates_by_flow)
 
         prompt = self._build_prompt(
             graph=graph,
@@ -37,14 +42,14 @@ class LLMPathSelector:
 
         if selections is None:
             return {}
-        
+
         paths: Dict[FlowKey, List[Node]] = {}
         for flow, candidates in (candidates_by_flow.items()):
             src, dst = flow
             label = src + "->" + dst
 
-            selected_index = selections.get(label) 
-            
+            selected_index = selections.get(label)
+
             if not isinstance(selected_index, int):
                 continue
 
@@ -53,6 +58,8 @@ class LLMPathSelector:
 
             paths[flow] = candidates[selected_index]
 
+        self.total_flows_decided += len(paths)
+
         # Debugging: flows the LLM never returned a usable pick for at all.
         missing = set(candidates_by_flow.keys()) - set(paths.keys())
         if missing:
@@ -60,6 +67,12 @@ class LLMPathSelector:
                   f"selection from the LLM (dropped silently, never reach repair): {missing}")
 
         return paths
+
+    def get_stats(self) -> dict:
+        return {
+            "total_flows_requested": self.total_flows_requested,
+            "total_flows_decided": self.total_flows_decided,
+        }
 
     @staticmethod
     def _build_schema(candidates_by_flow: Dict[FlowKey, List[List[Node]]]) -> dict:

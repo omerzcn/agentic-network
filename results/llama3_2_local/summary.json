@@ -1,0 +1,76 @@
+{
+  "llm_backend": "ollama",
+  "llm_model": "llama3.2",
+  "llm_temperature": 0,
+  "random_seed": 50,
+  "num_steps": 120,
+  "latency_requirement_range_ms": [
+    4.0,
+    8.0
+  ],
+  "algo_delays": {
+    "heuristic_no_delay": 0.0,
+    "heuristic_low_delay": 0.5,
+    "heuristic_high_delay": 10.0
+  },
+  "pdr_by_algorithm": {
+    "heuristic_no_delay": 0.26767099666326444,
+    "heuristic_low_delay": 0.26767099666326444,
+    "heuristic_high_delay": 0.2615563296204126,
+    "agentic": 0.2928700740394593
+  },
+  "sla_violations_by_algorithm": {
+    "heuristic_no_delay": {
+      "active_request_count": 12784,
+      "accepted_request_count": 3758,
+      "delay_dropped_request_count": 8968,
+      "no_valid_path_request_count": 58,
+      "other_dropped_request_count": 0,
+      "delay_dropped_mbps": 77362.0543091919,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 119
+    },
+    "heuristic_low_delay": {
+      "active_request_count": 12784,
+      "accepted_request_count": 3758,
+      "delay_dropped_request_count": 8968,
+      "no_valid_path_request_count": 58,
+      "other_dropped_request_count": 0,
+      "delay_dropped_mbps": 77362.0543091919,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 119
+    },
+    "heuristic_high_delay": {
+      "active_request_count": 12784,
+      "accepted_request_count": 3614,
+      "delay_dropped_request_count": 9048,
+      "no_valid_path_request_count": 122,
+      "other_dropped_request_count": 0,
+      "delay_dropped_mbps": 77529.60450654975,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 114
+    },
+    "agentic": {
+      "active_request_count": 12784,
+      "accepted_request_count": 4130,
+      "delay_dropped_request_count": 8580,
+      "no_valid_path_request_count": 74,
+      "other_dropped_request_count": 0,
+      "delay_dropped_mbps": 74591.39353668594,
+      "bandwidth_violation_duration_steps": 0,
+      "delay_violation_duration_steps": 120
+    }
+  },
+  "llm_agent_stats": {
+    "llm_calls": 2,
+    "total_tokens": 2826,
+    "average_call_latency_s": 72.60192538949923,
+    "avg_cpu_percent": 52.0,
+    "avg_memory_mb": 10199.431640625,
+    "peak_memory_mb": 10227.5078125,
+    "total_flows_requested": 106,
+    "total_flows_decided": 20,
+    "total_kept_llm_pick": 2,
+    "total_reconciled": 20
+  }
+}

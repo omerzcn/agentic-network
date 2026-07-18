@@ -3,7 +3,7 @@ Network Data
 
 Nodes:
 ------
-A 	B 	I 	J 	N 	K 	E 	D 	G 	F 	H 	L 	O 	M 	C 	
+I 	D 	O 	L 	J 	B 	K 	N 	A 	E 	C 	M 	G 	F 	H 	
 ------
 
 Links:
