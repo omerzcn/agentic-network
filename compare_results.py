@@ -9,9 +9,7 @@ import pandas as pd
 
 ALGO_COLUMNS = ["heuristic_no_delay", "heuristic_low_delay", "heuristic_high_delay", "agentic"]
 
-# Folders that aren't a full, presentable model comparison: the deterministic
-# non-LLM policy, and one-off ALGORITHMS=agentic debug runs (no heuristic columns).
-EXCLUDED_LABELS = {"global_te"}
+EXCLUDED_LABELS = {"global_te", "deepseek"}
 EXCLUDED_SUFFIXES = ("_debug",)
 
 def load_summaries(results_dir: str = "results") -> pd.DataFrame:
